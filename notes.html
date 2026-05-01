@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Study Notes & Materials | VT Academe | Best Coaching Patna</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Download free study notes and materials from VT Academe — Best coaching in Patna & Phulwari Sharif. Chapter-wise notes for NEET, JEE, Board exams by expert faculty.">
+    <meta name="keywords"
+        content="VT Academe notes, free study material Patna, NEET notes download, JEE study material, coaching notes Patna, physics chemistry maths biology notes, board exam notes Bihar, VT Academy study material">
+    <meta name="robots" content="index, follow">
+    <meta name="geo.region" content="IN-BR">
+    <meta name="geo.placename" content="Phulwari Khagaul Road, Phulwari Sharif, Patna, Bihar 801505">
+    <link rel="canonical" href="https://vtacademe.com/notes.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vtacademe.com/notes.html">
+    <meta property="og:site_name" content="VT Academe">
+    <meta property="og:title" content="Free Study Notes | VT Academe — Best Coaching in Patna">
+    <meta property="og:description" content="Download chapter-wise notes for NEET, JEE & Board exams prepared by VT Academe's expert faculty.">
+    <meta property="og:image" content="https://vtacademe.com/logo1.png">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Free Study Notes | VT Academe Patna">
+    <meta property="twitter:description" content="Download free NEET, JEE & Board exam notes from VT Academe.">
+    <meta property="twitter:image" content="https://vtacademe.com/logo1.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="logo1.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="logo1.png">
+    <meta name="theme-color" content="#0B2447">
+
+    <!-- JSON-LD: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vtacademe.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Study Notes", "item": "https://vtacademe.com/notes.html" }
+      ]
+    }
+    </script>
+
+    <!-- CSS & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #f5ede0;
+            --sage: #546877;
+            --beige: #ffffff;
+            --gold: #ff771c;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--primary);
+            color: #161311;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'DM Serif Display', serif;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 40px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        
+        .light-noise-bg {
+            background: #f5ede0;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .light-noise-bg::before {
+            content: "";
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(255, 119, 28, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(100px);
+        }
+
+        .light-noise-bg::after {
+            content: "";
+            position: absolute;
+            bottom: -20%;
+            right: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(84, 104, 119, 0.15) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(120px);
+        }
+    </style>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
+            authDomain: "vt-academy-37e0e.firebaseapp.com",
+            projectId: "vt-academy-37e0e",
+            storageBucket: "vt-academy-37e0e.firebasestorage.app",
+            messagingSenderId: "498511573525",
+            appId: "1:498511573525:web:4e41cd8322a1c813f2941c",
+            measurementId: "G-8KZ5F4JBGE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fetchNotes() {
+            const container = document.getElementById('notes-container');
+            const loader = document.getElementById('notes-loader');
+            const filterBar = document.getElementById('filter-bar');
+            
+            try {
+                const q = query(collection(db, "notes"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                const notesByClass = {};
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const className = data.class || 'Other';
+                    if (!notesByClass[className]) {
+                        notesByClass[className] = [];
+                    }
+                    notesByClass[className].push({ id: doc.id, ...data });
+                });
+                
+                loader.classList.add('hidden');
+                
+                const classes = Object.keys(notesByClass).sort((a,b) => {
+                    const numA = parseInt(a.replace(/\D/g, '')) || 0;
+                    const numB = parseInt(b.replace(/\D/g, '')) || 0;
+                    return numA - numB;
+                });
+
+                if (classes.length === 0) {
+                    container.innerHTML = `<div class="w-full text-center py-20 text-[#546877] font-medium text-lg border border-[#161311]/10 rounded-3xl bg-white shadow-sm">No notes available at the moment. Check back later!</div>`;
+                    return;
+                }
+                
+                // Render Filters
+                renderFilters(classes);
+                
+                let html = '';
+                classes.forEach((className, index) => {
+                    const delay = index * 0.1;
+                    html += `
+                        <div class="class-section w-full mb-16 animate-[fadeInUp_0.8s_ease-out_both] transition-all duration-500" 
+                             data-class="${className}" 
+                             style="animation-delay: ${delay}s">
+                            <div class="flex items-center gap-4 mb-8">
+                                <h2 class="text-4xl md:text-5xl font-black text-[#161311] title-font tracking-wide">${className}</h2>
+                                <div class="h-[2px] flex-grow bg-gradient-to-r from-[#ff771c]/50 via-[#546877]/20 to-transparent rounded-full"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+                    `;
+                    
+                    notesByClass[className].forEach(note => {
+                        const dateStr = note.createdAt ? new Date(note.createdAt.toDate()).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date';
+                        html += `
+                            <div class="bg-white rounded-[2rem] p-8 border border-[#161311]/5 hover:border-[#ff771c]/50 transition-all duration-500 group shadow-lg flex flex-col justify-between h-full transform hover:-translate-y-2">
+                                <div>
+                                    <div class="w-14 h-14 bg-[#546877]/10 rounded-2xl flex items-center justify-center mb-6 text-[#546877] group-hover:bg-[#ff771c] group-hover:text-white transition-all duration-500">
+                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-[#161311] mb-3 line-clamp-2 leading-tight group-hover:text-[#ff771c] transition-colors">${note.title}</h3>
+                                    <p class="text-sm font-medium text-[#546877] mb-8 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        ${dateStr}
+                                    </p>
+                                </div>
+                                <button onclick="window.downloadBase64PDF('${note.base64}', '${note.title}')" class="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#f5ede0] border border-[#ff771c]/20 text-[#ff771c] font-bold rounded-xl hover:bg-[#ff771c] hover:text-white hover:border-transparent transition-all duration-300 overflow-hidden relative">
+                                    <span class="relative z-10 flex items-center gap-2">
+                                        <svg class="w-5 h-5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Download Note
+                                    </span>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div>`;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error("Error fetching notes:", error);
+                loader.classList.add('hidden');
+                container.innerHTML = `<div class="w-full text-center py-20 text-red-500 font-medium">Failed to load notes. Please try again later.</div>`;
+            }
+        }
+
+        function renderFilters(classes) {
+            const filterBar = document.getElementById('filter-bar');
+            filterBar.innerHTML = '';
+            filterBar.classList.remove('hidden');
+            
+            // All classes button
+            filterBar.appendChild(createFilterBtn('All Materials', 'all'));
+            
+            // Individual class buttons
+            classes.forEach(cls => {
+                filterBar.appendChild(createFilterBtn(cls, cls));
+            });
+        }
+
+        function createFilterBtn(label, value) {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn px-6 py-2.5 rounded-full border border-[#161311]/10 bg-white text-sm font-bold text-[#546877] transition-all duration-500 hover:border-[#ff771c] hover:text-[#ff771c] active:scale-95 shadow-sm';
+            btn.dataset.filter = value;
+            btn.textContent = label;
+            
+            if (value === 'all') {
+                btn.classList.add('active-filter', 'bg-[#ff771c]', 'text-white', 'border-[#ff771c]');
+            }
+            
+            btn.onclick = () => {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-[#ff771c]', 'text-white', 'border-[#ff771c]');
+                    b.classList.add('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                });
+                btn.classList.add('bg-[#ff771c]', 'text-white', 'border-[#ff771c]');
+                btn.classList.remove('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                
+                // Filter content
+                const sections = document.querySelectorAll('.class-section');
+                sections.forEach(section => {
+                    if (value === 'all' || section.dataset.class === value) {
+                        section.classList.remove('hidden');
+                        section.style.opacity = '1';
+                        section.style.transform = 'translateY(0)';
+                    } else {
+                        section.classList.add('hidden');
+                        section.style.opacity = '0';
+                        section.style.transform = 'translateY(20px)';
+                    }
+                });
+            };
+            
+            return btn;
+        }
+
+        window.downloadBase64PDF = (base64String, title) => {
+            try {
+                let pdfURI = base64String;
+                if (!base64String.startsWith('data:application/pdf;base64,')) {
+                    pdfURI = 'data:application/pdf;base64,' + base64String;
+                }
+                
+                const link = document.createElement('a');
+                link.href = pdfURI;
+                link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                alert("Could not download file. It might be corrupted.");
+                console.error(err);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', fetchNotes);
+    </script>
+</head>
+<body class="antialiased min-h-screen flex flex-col pt-24 relative selection:bg-[#ff771c] selection:text-white">
+
+    <div class="light-noise-bg"></div>
+
+    <!-- Navbar Minimal -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-[#161311]/5 transition-all duration-300 shadow-sm">
+        <div class="mx-auto max-w-[1400px] px-6 lg:px-12">
+            <div class="flex h-20 items-center justify-between">
+                <a href="index.html" class="flex items-center gap-4 group">
+                    <img class="h-12 w-12 object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform" src="logo1.png" alt="Logo">
+                    <div class="hidden sm:block">
+                        <h1 class="text-xl font-black text-[#161311] tracking-tight title-font drop-shadow-sm">VT <span class="text-[#ff771c]">academe</span></h1>
+                    </div>
+                </a>
+                <div class="flex gap-4 items-center">
+                    <a href="student-portal.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-[#546877] hover:text-[#161311] transition-colors px-4 py-2">
+                        Student Portal
+                    </a>
+                    <a href="index.html" class="flex items-center gap-2 text-sm font-bold text-[#ff771c] hover:text-white transition-colors bg-[#ff771c]/10 hover:bg-[#ff771c] px-4 py-2 rounded-full border border-[#ff771c]/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        
+        <!-- Header Text -->
+        <div class="text-center max-w-4xl mx-auto mb-16 pt-4 animate-[fadeInUp_1s_ease-out_both] select-none">
+            <div class="inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-[#ff771c]/30 bg-white shadow-sm mb-8 transform hover:scale-105 transition-transform duration-300">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#ff771c] animate-ping relative">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-[#ff771c] opacity-75 animate-ping"></span>
+                </span>
+                <span class="text-[#ff771c] text-xs font-black uppercase tracking-[0.2em] pt-0.5">STUDY MATERIALS</span>
+            </div>
+
+            <h1 class="text-5xl sm:text-6xl md:text-[5rem] font-black text-[#161311] mb-6 title-font leading-[1.1] tracking-tight">
+                Class <span class="text-transparent bg-clip-text" style="background-image: linear-gradient(to right, #ff771c, #546877);">Notes</span>
+            </h1>
+
+            <p class="text-[#546877] text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+                Download high-quality study materials, chapter summaries, and detailed notes prepared by our expert faculty.
+            </p>
+        </div>
+
+        <!-- Filter Bar -->
+        <div id="filter-bar" class="flex flex-wrap justify-center gap-3 mb-16 hidden animate-[fadeInUp_0.8s_ease-out_both]" style="animation-delay: 0.2s">
+            <!-- Buttons dynamically injected -->
+        </div>
+
+        <!-- Notes Container -->
+        <div class="max-w-[1200px] mx-auto w-full relative z-20">
+            <!-- Loader -->
+            <div id="notes-loader" class="flex flex-col items-center justify-center py-20 animate-pulse">
+                <div class="w-16 h-16 border-4 border-[#ff771c]/30 border-t-[#ff771c] rounded-full animate-spin mb-4"></div>
+                <p class="text-[#ff771c] font-bold tracking-widest uppercase text-sm">Fetching Materials...</p>
+            </div>
+
+            <!-- Dynamic Content -->
+            <div id="notes-container"></div>
+        </div>
+        
+    </main>
+
+</body>
+</html>

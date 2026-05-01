@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal | VT Academe | Track Results & Fees | Best Coaching Patna</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="VT Academe Student Portal — Access your student record, exam results, fee status and academic progress. Best coaching institute in Patna & Phulwari Sharif.">
+    <meta name="keywords"
+        content="VT Academe student portal, student login VT Academy, coaching results Patna, student record, VT Academe fees, exam results coaching Patna">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://vtacademe.com/student-portal.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vtacademe.com/student-portal.html">
+    <meta property="og:site_name" content="VT Academe">
+    <meta property="og:title" content="Student Portal | VT Academe Patna">
+    <meta property="og:description" content="Access your student record, results & fee status at VT Academe — Best coaching in Patna.">
+    <meta property="og:image" content="https://vtacademe.com/logo1.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="logo1.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="logo1.png">
+    <meta name="theme-color" content="#0B2447">
+
+    <!-- JSON-LD: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vtacademe.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Student Portal", "item": "https://vtacademe.com/student-portal.html" }
+      ]
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #C6A75E;
+            --crimson: #991B1B;
+            --teal: #0F3D3E;
+            --ink: #0A0A0A;
+            --paper: #F8F8F6;
+            --paper-dark: #EAEAE4;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        .title-font {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .ledger-card {
+            background: #FFFFFF;
+            border: 2px solid var(--ink);
+            box-shadow: 8px 8px 0px rgba(10, 10, 10, 0.1);
+            border-radius: 0;
+        }
+
+        .hero-bg {
+            background-color: var(--paper);
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .header-bar {
+            background: #FFFFFF;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .academic-title {
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-link {
+            position: relative;
+            color: var(--ink);
+            font-weight: 700;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--crimson);
+            transition: width 0.25s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--crimson);
+        }
+
+        .btn-sharp {
+            background: var(--ink);
+            color: #FFFFFF;
+            border: 2px solid var(--ink);
+            border-radius: 0;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-sharp:hover {
+            background: var(--crimson);
+            border-color: var(--crimson);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px rgba(10, 10, 10, 1);
+        }
+
+        .input-sharp {
+            background: #FFFFFF;
+            border: 2px solid var(--ink);
+            border-radius: 0;
+            color: var(--ink);
+            transition: all 0.2s;
+        }
+
+        .input-sharp:focus {
+            outline: none;
+            border-color: var(--crimson);
+            box-shadow: 4px 4px 0px rgba(153, 27, 27, 0.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .badge-sharp {
+            border: 1.5px solid var(--ink);
+            border-radius: 0;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            animation: spin 0.8s linear infinite;
+        }
+
+        .pattern-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230a0a0a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header-bar sticky top-0 z-50 py-4 px-6 md:px-12">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-5">
+
+            <a href="index.html" class="flex items-center gap-3.5 group flex-shrink-0">
+                <img src="logo1.png" alt="Logo"
+                    class="h-12 w-auto bg-[#0a0a0a] border border-black group-hover:bg-[#991B1B] transition-colors duration-300">
+                <div>
+                    <p
+                        class="title-font text-xl font-bold text-[#0a0a0a] leading-tight uppercase tracking-tight group-hover:text-[#991B1B] transition-colors duration-300">
+                        VT ACADEME</p>
+                    <p class="text-[9px] uppercase tracking-[0.25em] text-[#0F3D3E] font-bold mt-0.5">Empowering True
+                        Potential</p>
+                </div>
+            </a>
+
+            <nav class="ml-auto flex items-center gap-8">
+                <a href="index.html" class="nav-link text-[11px] uppercase tracking-[0.18em]">Home</a>
+                <a href="student-portal.html" class="nav-link active text-[11px] uppercase tracking-[0.18em]">Portal</a>
+                <a href="notes.html" class="nav-link text-[11px] uppercase tracking-[0.18em]">Notes</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Search Section -->
+    <section class="hero-bg pattern-bg pt-20 pb-28 px-6 relative">
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+
+            <div class="inline-block border border-black px-4 py-1 mb-8 bg-white">
+                <p class="uppercase font-bold text-[10px] tracking-[0.3em] text-[#0a0a0a]">Official Student Portal</p>
+            </div>
+
+            <h1 class="title-font academic-title font-bold mb-6"
+                style="font-size: clamp(2.6rem, 6vw, 4.5rem); line-height:1;">
+                <span style="display:block; margin-bottom:8px;">Access Your</span>
+                <span
+                    style="display:block; font-size: clamp(3rem, 7vw, 5.2rem); font-style: italic; font-weight: 600;">Student
+                    Record</span>
+            </h1>
+
+            <p
+                class="text-[#0a0a0a] text-sm md:text-base max-w-md mx-auto mb-10 font-medium leading-relaxed opacity-80">
+                Enter your <span class="font-bold text-[#991B1B]">Admission No</span> to view your
+                official profile, dues status, and test results.
+            </p>
+
+            <!-- Search Form -->
+            <div
+                class="flex flex-col sm:flex-row max-w-xl mx-auto align-stretch gap-0 border-2 border-[#0a0a0a] bg-white shadow-[8px_8px_0_rgba(10,10,10,0.1)]">
+                <div
+                    class="flex-1 flex items-center px-4 relative border-b-2 sm:border-b-0 sm:border-r-2 border-[#0a0a0a]">
+                    <svg class="w-5 h-5 absolute left-4 pointer-events-none text-[#0a0a0a]" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input id="admission-input" type="text" placeholder="e.g. 1024"
+                        class="w-full bg-transparent text-[#0a0a0a] placeholder-gray-400 pl-10 pr-2 py-4 text-sm font-bold outline-none uppercase tracking-wider"
+                        autocomplete="off" autocapitalize="characters">
+                </div>
+                <button id="search-btn"
+                    class="px-8 py-4 bg-[#0a0a0a] hover:bg-[#991B1B] text-white font-bold text-xs uppercase tracking-[0.2em] transition-colors duration-200 flex items-center justify-center gap-2 group whitespace-nowrap">
+                    <span>Retrieve Record</span>
+                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Loading state -->
+            <div id="search-loading" class="hidden mt-8 flex justify-center">
+                <div class="flex items-center gap-3 text-[#0a0a0a] text-sm font-bold tracking-widest uppercase">
+                    <svg class="spinner w-5 h-5 text-[#991B1B]" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Searching...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="max-w-3xl mx-auto px-6 -mt-6 pb-24 relative z-10">
+
+        <div id="not-found"
+            class="hidden text-center py-20 slide-up border-[3px] border-[#0a0a0a] bg-white shadow-[8px_8px_0_rgba(10,10,10,0.1)]">
+            <div
+                class="w-24 h-24 bg-white border-2 border-black flex items-center justify-center mx-auto mb-6 shadow-[8px_8px_0_rgba(10,10,10,0.1)]">
+                <svg class="w-10 h-10 text-[#991B1B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h2 class="title-font text-4xl text-[#0a0a0a] font-bold mb-3 tracking-tight">Record Not Found</h2>
+            <p class="text-[#0a0a0a] font-medium text-base max-w-md mx-auto opacity-70">We couldn't locate a student
+                with that ID. Please verify your entry and try again.</p>
+        </div>
+
+        <div id="student-card" class="hidden slide-up mt-12">
+            <div class="ledger-card flex flex-col relative overflow-hidden">
+                <div class="h-2 w-full bg-[#0a0a0a]"></div>
+
+                <div class="bg-white p-8 md:p-12 border-b-2 border-black relative">
+                    <div
+                        class="absolute top-0 right-0 bg-[#0a0a0a] text-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] border-l-2 border-b-2 border-black">
+                        Official Record
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-8 mt-4 md:mt-0">
+                        <div class="relative flex-shrink-0 z-10 box-content border-[3px] border-black p-1 bg-white">
+                            <div class="w-32 h-36 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                <img id="s-photo" src="" alt="Photo"
+                                    class="w-full h-full object-cover transition-all duration-300">
+                            </div>
+                        </div>
+
+                        <div class="flex-1 z-10 mt-2 md:mt-0">
+                            <h2 id="s-name"
+                                class="title-font text-4xl sm:text-5xl text-[#0a0a0a] font-bold leading-none tracking-tight mb-3">
+                            </h2>
+
+                            <div class="flex flex-wrap items-center gap-4 mt-2">
+                                <p id="s-admission-no"
+                                    class="text-[#0a0a0a] text-sm font-mono font-bold bg-[#EAEAE4] px-3 py-1.5 border border-black uppercase tracking-wider">
+                                </p>
+                                <span id="s-fees-badge"
+                                    class="px-3 py-1.5 text-xs font-bold uppercase tracking-wider badge-sharp bg-white"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 md:p-12 bg-[#F8F8F6]">
+                    <div class="flex items-center gap-4 mb-8">
+                        <h3 class="text-sm uppercase tracking-[0.2em] text-[#0a0a0a] font-bold flex-shrink-0">Student
+                            Particulars</h3>
+                        <div class="h-[2px] w-full bg-[#0a0a0a] opacity-20"></div>
+                    </div>
+
+                    <div id="s-details-body" class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
+                        <!-- Rows injected by JS -->
+                    </div>
+
+                    <div class="mt-16">
+                        <div class="flex items-center gap-4 mb-8">
+                            <h3 class="text-sm uppercase tracking-[0.2em] text-[#0a0a0a] font-bold flex-shrink-0">
+                                Academic Results</h3>
+                            <div class="h-[2px] w-full bg-[#0a0a0a] opacity-20"></div>
+                        </div>
+                        <div id="s-results-body">
+                            <!-- Results injected by JS -->
+                        </div>
+                    </div>
+
+                    <div class="mt-16">
+                        <div class="flex items-center gap-4 mb-8">
+                            <h3 class="text-sm uppercase tracking-[0.2em] text-[#0a0a0a] font-bold flex-shrink-0">Fees
+                                &amp; Installments</h3>
+                            <div class="h-[2px] w-full bg-[#0a0a0a] opacity-20"></div>
+                        </div>
+                        <div id="s-fees-body">
+                            <!-- Fees injected by JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <footer
+        class="bg-white border-t-2 border-black text-[#0a0a0a] font-bold text-center py-6 text-[10px] md:text-xs uppercase tracking-widest">
+        VT ACADEME &middot; Academic Tracking Portal
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, getDoc, query, where, doc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
+            authDomain: "vt-academy-37e0e.firebaseapp.com",
+            projectId: "vt-academy-37e0e",
+            storageBucket: "vt-academy-37e0e.firebasestorage.app",
+            messagingSenderId: "498511573525",
+            appId: "1:498511573525:web:4e41cd8322a1c813f2941c",
+            measurementId: "G-8KZ5F4JBGE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const inputEl = document.getElementById('admission-input');
+        inputEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') searchStudent();
+        });
+        document.getElementById('search-btn').addEventListener('click', searchStudent);
+
+        async function searchStudent() {
+            var rawInput = inputEl.value.trim();
+            var upperInput = rawInput.toUpperCase();
+            var lowerInput = rawInput.toLowerCase();
+            if (!rawInput) { inputEl.focus(); return; }
+
+            setVisible('search-loading', true);
+            setVisible('student-card', false);
+            setVisible('not-found', false);
+
+            try {
+                var studentData = null;
+                var studentDocId = null;
+
+                // Build all possible where-clause queries
+                var fieldQueries = [
+                    where("admissionNo", "==", rawInput),
+                    where("admissionNo", "==", upperInput),
+                    where("admissionNo", "==", lowerInput),
+                    where("formNo", "==", rawInput),
+                    where("formNo", "==", upperInput),
+                    where("studentId", "==", rawInput),
+                    where("studentId", "==", upperInput),
+                    where("phone", "==", rawInput),
+                    where("name", "==", rawInput)
+                ];
+
+                // Numeric type fallback (Firebase is type-strict)
+                var numInput = Number(rawInput);
+                if (!isNaN(numInput) && rawInput !== '') {
+                    fieldQueries.push(where("admissionNo", "==", numInput));
+                    fieldQueries.push(where("formNo", "==", numInput));
+                    fieldQueries.push(where("studentId", "==", numInput));
+                    fieldQueries.push(where("phone", "==", numInput));
+                }
+
+                for (var i = 0; i < fieldQueries.length; i++) {
+                    var q = query(collection(db, "students"), fieldQueries[i]);
+                    var snap = await getDocs(q);
+                    if (!snap.empty) {
+                        snap.forEach(function (docSnap) {
+                            studentData = docSnap.data();
+                            studentDocId = docSnap.id;
+                        });
+                        break;
+                    }
+                }
+
+                // Fallback: direct document ID lookup
+                if (!studentData && rawInput.length >= 4) {
+                    try {
+                        var directDoc = await getDoc(doc(db, "students", rawInput));
+                        if (directDoc.exists()) {
+                            studentData = directDoc.data();
+                            studentDocId = directDoc.id;
+                        }
+                    } catch (ignore) { }
+                }
+
+                if (!studentData) {
+                    setVisible('not-found', true);
+                } else {
+                    await renderStudent(studentData, studentDocId);
+                    setVisible('student-card', true);
+                }
+            } catch (err) {
+                var errBox = document.getElementById('not-found');
+                errBox.innerHTML = '<h2 class="title-font text-2xl text-red-600 font-bold mb-3">System Error</h2><p class="text-[10px] font-mono break-all opacity-80 text-red-800">' + String(err.message) + '</p>';
+                setVisible('not-found', true);
+                console.error(err);
+            } finally {
+                setVisible('search-loading', false);
+            }
+        }
+
+        function setVisible(id, show) {
+            var el = document.getElementById(id);
+            if (show) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        }
+
+        async function renderStudent(s, docId) {
+            // Photo
+            var photoEl = document.getElementById('s-photo');
+            if (s.photoBase64) {
+                photoEl.src = s.photoBase64;
+                photoEl.alt = s.name || 'Student';
+            } else {
+                photoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(s.name || 'S') + '&background=0F3D3E&color=ffffff&size=128';
+            }
+
+            // Name
+            document.getElementById('s-name').textContent = s.name || 'Unnamed Student';
+
+            // Admission ID
+            var activeId = s.admissionNo || s.formNo || s.studentId || '-';
+            document.getElementById('s-admission-no').textContent = 'ID: ' + activeId;
+
+            // Fees Badge
+            var feesEl = document.getElementById('s-fees-badge');
+            var tFees = Number(s.feesTotal) || 0;
+            var pFees = Number(s.feesPaid) || 0;
+            var due = tFees - pFees;
+
+            if (tFees === 0) {
+                feesEl.textContent = 'FEES NOT SET';
+                feesEl.className = 'px-3 py-1.5 text-xs font-bold uppercase tracking-wider badge-sharp bg-white text-yellow-600 border-yellow-600';
+            } else if (due <= 0) {
+                feesEl.textContent = 'FEES CLEARED';
+                feesEl.className = 'px-3 py-1.5 text-xs font-bold uppercase tracking-wider badge-sharp bg-white text-green-700 border-green-700';
+            } else {
+                feesEl.textContent = 'DUE: \u20B9' + due;
+                feesEl.className = 'px-3 py-1.5 text-xs font-bold uppercase tracking-wider badge-sharp bg-white text-red-700 border-red-700';
+            }
+
+            // Student Details Grid
+            var rows = [
+                ['Admission No', s.admissionNo],
+                ['Form No', s.formNo],
+                ['Batch', s.batch],
+                ['Gender', s.gender],
+                ['Blood Group', s.bloodGroup],
+                ["Father's Name", s.fatherName],
+                ['Phone / WhatsApp', s.phone],
+                ['Parent Mobile', s.parentMobile],
+                ['Previous School', s.previousSchool],
+                ['Board', s.board],
+                ['Class', s.course],
+                ['Subject', s.std],
+                ['Medium', s.medium]
+            ];
+
+            var detailsHtml = '';
+            for (var i = 0; i < rows.length; i++) {
+                var label = rows[i][0];
+                var val = rows[i][1];
+                if (val != null && String(val).trim() !== '') {
+                    detailsHtml += '<div class="flex flex-col border-b border-black border-opacity-20 pb-2">' +
+                        '<span class="text-[#0a0a0a] text-[10px] uppercase tracking-widest font-bold opacity-60 mb-1">' + label + '</span>' +
+                        '<span class="text-[#0a0a0a] font-bold text-sm md:text-base">' + val + '</span>' +
+                        '</div>';
+                }
+            }
+            document.getElementById('s-details-body').innerHTML = detailsHtml;
+
+            // ── Progression Report / Assessments ─────────────────────────────
+            var resultsContainer = document.getElementById('s-results-body');
+            resultsContainer.innerHTML = '<div class="text-xs text-gray-500 font-bold uppercase tracking-widest py-4 animate-pulse">Loading assessment data...</div>';
+
+            try {
+                var assessSnap = await getDocs(collection(db, 'students', docId, 'assessments'));
+
+                if (assessSnap.empty) {
+                    resultsContainer.innerHTML = '<div class="border-2 border-dashed border-black p-10 text-center bg-[#F8F8F6]">' +
+                        '<div class="text-4xl mb-3">&#128203;</div>' +
+                        '<p class="text-xs font-bold uppercase tracking-widest text-[#0a0a0a] opacity-50">No test results have been recorded yet.</p>' +
+                        '</div>';
+                    return;
+                }
+
+                var html = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">';
+
+                assessSnap.forEach(function (d) {
+                    var data = d.data();
+                    var total = Number(data.total) || 1;
+                    var obtained = Number(data.obtained) || 0;
+                    var percNum = (obtained / total) * 100;
+                    var percStr = percNum.toFixed(1);
+
+                    var barColor = percNum >= 75 ? 'bg-emerald-500' : percNum >= 60 ? 'bg-blue-500' : percNum >= 45 ? 'bg-yellow-500' : 'bg-red-500';
+                    var percColor = percNum >= 75 ? 'text-emerald-700' : percNum >= 60 ? 'text-blue-600' : percNum >= 45 ? 'text-yellow-600' : 'text-red-600';
+
+                    html += '<div class="bg-white border-2 border-[#0a0a0a] border-l-4 border-l-[#0a0a0a]/20 p-5 shadow-[4px_4px_0_rgba(10,10,10,0.08)] hover:-translate-y-1 hover:shadow-[6px_6px_0_rgba(10,10,10,0.15)] transition-all">' +
+                        '<div class="flex items-start justify-between mb-4">' +
+                        '<div>' +
+                        '<div class="text-sm font-black uppercase tracking-wider text-[#0a0a0a] mb-1">' + (data.testName || 'Assessment') + '</div>' +
+                        '<div class="text-[10px] uppercase tracking-widest font-bold text-[#0a0a0a] opacity-50">' + (data.date || 'No Date') + '</div>' +
+                        '</div>' +
+                        '<div class="text-right">' +
+                        '<div class="font-black text-2xl leading-none text-[#0a0a0a]">' + obtained + '<span class="text-xs font-bold opacity-40">/' + total + '</span></div>' +
+                        '<div class="text-[11px] font-black ' + percColor + ' uppercase tracking-wider mt-1">' + percStr + '%</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="w-full h-1.5 bg-black/10 rounded-full overflow-hidden">' +
+                        '<div class="h-full rounded-full ' + barColor + ' transition-all duration-700" style="width:' + percStr + '%"></div>' +
+                        '</div>' +
+                        '</div>';
+                });
+
+                html += '</div>';
+                resultsContainer.innerHTML = html;
+
+            } catch (e) {
+                console.error('Error loading progression assessments:', e);
+                resultsContainer.innerHTML = '<div class="text-xs text-red-700 p-4 border border-red-200 bg-red-50 font-bold uppercase">Error loading assessment data: ' + e.message + '</div>';
+            }
+
+            // ── Fees & Installments ─────────────────────────────
+            var feesContainer = document.getElementById('s-fees-body');
+            feesContainer.innerHTML = '<div class="text-xs text-gray-500 font-bold uppercase tracking-widest py-4 animate-pulse">Loading fees data...</div>';
+
+            try {
+                var feesSnap = await getDocs(collection(db, 'students', docId, 'installments'));
+                var totalFees = Number(s.feesTotal) || 0;
+                var totalPaid = Number(s.feesPaid) || 0;
+
+                var installments = [];
+                feesSnap.forEach(function (d) {
+                    installments.push(d.data());
+                });
+
+                // Sort by date ascending
+                installments.sort(function (a, b) {
+                    return (a.date || '').localeCompare(b.date || '');
+                });
+
+                // Recalculate from installments
+                if (installments.length > 0) {
+                    totalPaid = 0;
+                    for (var k = 0; k < installments.length; k++) {
+                        totalPaid += Number(installments[k].amount) || 0;
+                    }
+                }
+                var rem = totalFees - totalPaid;
+                if (rem < 0) rem = 0;
+
+                if (totalFees === 0 && installments.length === 0) {
+                    feesContainer.innerHTML = '<div class="border-2 border-dashed border-black p-10 text-center bg-[#F8F8F6]">' +
+                        '<div class="text-4xl mb-3">&#128176;</div>' +
+                        '<p class="text-xs font-bold uppercase tracking-widest text-[#0a0a0a] opacity-50">No fees information available.</p>' +
+                        '</div>';
+                } else {
+                    var fhtml = '';
+
+                    // Summary bar
+                    var percFee = totalFees > 0 ? ((totalPaid / totalFees) * 100).toFixed(1) : 0;
+                    fhtml += '<div class="border-2 border-[#0a0a0a] p-6 mb-4 bg-white">' +
+                        '<div class="grid grid-cols-3 gap-4 mb-4 text-center">' +
+                        '<div><div class="text-[10px] font-bold uppercase tracking-widest text-[#0a0a0a] opacity-50 mb-1">Total</div><div class="text-lg font-black text-[#0a0a0a]">\u20B9' + totalFees.toLocaleString('en-IN') + '</div></div>' +
+                        '<div><div class="text-[10px] font-bold uppercase tracking-widest text-emerald-700 mb-1">Paid</div><div class="text-lg font-black text-emerald-700">\u20B9' + totalPaid.toLocaleString('en-IN') + '</div></div>' +
+                        '<div><div class="text-[10px] font-bold uppercase tracking-widest text-red-700 mb-1">Due</div><div class="text-lg font-black text-red-700">\u20B9' + rem.toLocaleString('en-IN') + '</div></div>' +
+                        '</div>' +
+                        '<div class="w-full h-2 bg-black/10 rounded-full overflow-hidden">' +
+                        '<div class="h-full rounded-full bg-emerald-500 transition-all duration-700" style="width:' + percFee + '%"></div>' +
+                        '</div>' +
+                        '</div>';
+
+                    // Installment list
+                    if (installments.length > 0) {
+                        fhtml += '<div class="space-y-3">';
+                        var rPaid = 0;
+                        for (var m = 0; m < installments.length; m++) {
+                            var inst = installments[m];
+                            var iAmt = Number(inst.amount) || 0;
+                            rPaid += iAmt;
+                            var iRem = totalFees - rPaid;
+                            if (iRem < 0) iRem = 0;
+
+                            fhtml += '<div class="flex items-center gap-4 p-4 border-2 border-[#0a0a0a] bg-white shadow-[3px_3px_0_rgba(10,10,10,0.06)]">' +
+                                '<div class="w-9 h-9 border-2 border-[#0a0a0a] flex items-center justify-center font-black text-sm bg-[#F8F8F6] shrink-0">' + (m + 1) + '</div>' +
+                                '<div class="flex-1 min-w-0">' +
+                                '<div class="flex items-center gap-3 mb-0.5">' +
+                                '<span class="text-sm font-black text-[#0a0a0a]">\u20B9' + iAmt.toLocaleString('en-IN') + '</span>' +
+                                '<span class="text-[10px] font-bold text-[#0a0a0a] opacity-40 uppercase tracking-widest">' + (inst.date || '') + '</span>' +
+                                '<span class="text-[9px] font-bold text-[#0a0a0a] opacity-30 bg-[#EAEAE4] px-2 py-0.5 uppercase tracking-widest">' + (inst.mode || 'Cash') + '</span>' +
+                                '</div>' +
+                                '<div class="text-[10px] font-bold text-[#0a0a0a] opacity-40 uppercase tracking-widest">Balance: \u20B9' + iRem.toLocaleString('en-IN') + '</div>' +
+                                '</div>' +
+                                '</div>';
+                        }
+                        fhtml += '</div>';
+                    }
+
+                    feesContainer.innerHTML = fhtml;
+                }
+            } catch (fe) {
+                console.error('Error loading fees:', fe);
+                feesContainer.innerHTML = '<div class="text-xs text-red-700 p-4 border border-red-200 bg-red-50 font-bold uppercase">Error loading fees data: ' + fe.message + '</div>';
+            }
+        }
+    </script>
+</body>
+
+</html>

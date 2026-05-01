@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VT Academe | Secure Admin Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #F8FAFC; }
+        
+        .title-font { font-family: 'DM Serif Display', serif; }
+        
+        .nav-active { 
+            background: #3B82F6;
+            color: #ffffff !important; 
+            border-radius: 0 1.5rem 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+        }
+        
+        /* Custom Scrollbar for table */
+        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        /* Sidebar base */
+        #sidebar { transition: width 0.3s ease; }
+
+        /* Mobile: Sidebar is a slide-over drawer */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed; top: 0; left: 0; bottom: 0;
+                width: 280px !important; z-index: 80;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: none;
+            }
+            #sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: 8px 0 30px rgba(0,0,0,0.15);
+            }
+            #sidebarOverlay {
+                position: fixed; inset: 0; z-index: 75;
+                background: rgba(15, 23, 42, 0.4);
+                backdrop-filter: blur(4px);
+                opacity: 0; pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+            #sidebarOverlay.active {
+                opacity: 1; pointer-events: auto;
+            }
+            #desktopToggle { display: none !important; }
+        }
+        
+        /* Desktop: Sidebar collapse */
+        @media (min-width: 769px) {
+            #sidebar.collapsed { width: 5rem; }
+            #sidebar.collapsed span { display: none; }
+            #sidebar.collapsed h1 { display: none; }
+            #sidebar.collapsed .sidebar-close-mobile { display: none; }
+            #sidebar.collapsed .px-8 { padding-left: 0; padding-right: 0; justify-content: center; }
+            #sidebar.collapsed .pr-6 { padding-right: 0; }
+        }
+        
+        /* Modals glass overlay */
+        .modal-overlay {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Custom Student Picker */
+        .student-picker-list { max-height: 260px; overflow-y: auto; }
+        .student-picker-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+            border: 1.5px solid transparent; border-radius: 12px; cursor: pointer;
+            transition: all 0.15s ease; background: #f8fafc;
+        }
+        .student-picker-item:hover { background: #eff6ff; border-color: #bfdbfe; }
+        .student-picker-item.selected { background: #dbeafe; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .student-picker-item .sp-avatar {
+            width: 36px; height: 36px; border-radius: 10px; object-fit: cover;
+            background: #e2e8f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 13px; color: #475569; border: 1.5px solid #e2e8f0;
+        }
+        .student-picker-item .sp-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .student-picker-item .sp-name { font-weight: 700; font-size: 13px; color: #0B2447; line-height: 1.2; }
+        .student-picker-item .sp-id { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
+        .student-picker-item .sp-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #f0fdf4; color: #16a34a; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .student-picker-empty { padding: 30px; text-align: center; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        /* Mobile content adjustments */
+        @media (max-width: 640px) {
+            .student-picker-item .sp-badge { display: none; }
+            .student-picker-item { padding: 8px 10px; gap: 10px; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased overflow-hidden h-screen flex">
+
+    <!-- LOGIN SECTION -->
+    <div id="loginSection" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0B2447] bg-opacity-95 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-8 relative overflow-hidden bg-white/10 border-white/20">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 transform translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-32 h-32 bg-orange-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 transform -translate-x-1/2 translate-y-1/2"></div>
+            
+            <div class="text-center mb-8 relative z-10">
+                <img src="logo1.png" alt="Logo" class="h-20 mx-auto mb-4 drop-shadow-lg filter brightness-110">
+                <h2 class="title-font text-3xl font-bold text-white tracking-wide">Portal Access</h2>
+                <p class="text-xs text-blue-300 mt-2 tracking-[0.2em] font-medium uppercase text-opacity-80">Restricted Area</p>
+            </div>
+
+            <div id="loginAlert" class="hidden mb-4 p-3 rounded-lg text-sm font-semibold border relative z-10"></div>
+
+            <form id="loginForm" class="space-y-6 relative z-10">
+                <div>
+                    <label class="block text-xs font-bold text-blue-200 mb-1.5 uppercase tracking-wider">Master Password</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="password" id="loginPassword" required class="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/90 border-0 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-inner font-medium text-[#0B2447] placeholder-gray-400" placeholder="••••••••••••">
+                    </div>
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 px-4 rounded-xl shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all hover:-translate-y-1 flex justify-center items-center gap-2 tracking-wide">
+                    Authenticate <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboardSection" class="hidden w-full h-full flex bg-[#F4F7F6]">
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-[260px] bg-white flex flex-col z-20 shrink-0 relative">
+            <!-- Desktop Toggle Button -->
+            <button id="desktopToggle" class="hidden md:flex absolute -right-3 top-9 bg-white text-black p-1.5 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.1)] border border-slate-200 hover:bg-slate-50 focus:outline-none z-30 transition-transform">
+                <i data-lucide="chevron-left" id="desktopToggleIcon" class="w-4 h-4 text-black" style="stroke-width: 3px;"></i>
+            </button>
+
+            <!-- Brand + Mobile Close -->
+            <div class="h-24 px-8 flex items-center justify-between shrink-0">
+                <h1 class="font-black text-[22px] text-[#0B2447] tracking-tight">VT <span class="text-blue-500">Admin</span></h1>
+                <button onclick="closeMobileSidebar()" class="sidebar-close-mobile md:hidden p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <!-- Nav Links -->
+            <nav class="flex-1 py-4 pr-6 space-y-1 overflow-y-auto custom-scroll">
+                <a href="#" onclick="switchSection('students'); closeMobileSidebar();" id="nav-students" class="nav-active flex items-center gap-4 px-8 py-4 text-white font-bold transition-all">
+                    <i data-lucide="users" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Students</span>
+                </a>
+                <button onclick="openModal('studentModal'); document.getElementById('addStudentForm').reset(); document.getElementById('editStudentId').value=''; document.getElementById('admin_photoPreview').classList.add('hidden'); document.getElementById('studentModalTitle').innerText = 'Enrollment Form'; closeMobileSidebar();" class="w-full flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all group">
+                    <i data-lucide="plus-circle" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></i> 
+                    <span class="text-[15px]">Register New</span>
+                </button>
+                <a href="#" onclick="switchSection('gallery'); closeMobileSidebar();" id="nav-gallery" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="image" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Gallery Management</span>
+                </a>
+                <a href="#" onclick="switchSection('progression'); closeMobileSidebar();" id="nav-progression" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Progression Report</span>
+                </a>
+                <a href="#" onclick="switchSection('fees'); closeMobileSidebar();" id="nav-fees" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="indian-rupee" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Fees Management</span>
+                </a>
+                <a href="#" onclick="switchSection('notes'); closeMobileSidebar();" id="nav-notes" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="book-open" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Notes Management</span>
+                </a>
+                <a href="index.html" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="home" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Main Website</span>
+                </a>
+            </nav>
+
+            <!-- Bottom Action -->
+            <div class="p-8 shrink-0">
+                <button id="logoutBtn" class="flex items-center gap-3 text-red-500 hover:text-red-700 font-bold text-[15px] transition-colors">
+                    <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 h-full overflow-y-auto relative bg-[#F4F7F6]">
+            <!-- Header -->
+            <header class="bg-white px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center sticky top-0 z-10 w-full shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <div class="flex items-center gap-3">
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-xl text-slate-500 hover:text-[#0B2447] hover:bg-slate-100 transition-colors" onclick="openMobileSidebar()">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-lg sm:text-2xl font-black text-[#0B2447] tracking-tight">Student Records</h2>
+                </div>
+                <!-- Admin Tag -->
+                <div class="flex items-center gap-3">
+                    <span class="text-[11px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Admin</span>
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-base sm:text-lg shadow-sm">A</div>
+                </div>
+            </header>
+            
+            <div class="p-4 sm:p-6 md:p-8 max-w-[1400px] mx-auto">
+                <!-- STUDENTS REGISTRY SECTION -->
+                <div id="section-students" class="dashboard-section block">
+                    <!-- Search & Layout Container -->
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                            <div class="relative w-full sm:w-[400px]">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                <input type="text" id="searchInput" placeholder="Search by name, ID or phone..." class="pl-11 pr-4 py-2.5 rounded-full border border-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-50 focus:border-blue-200 w-full bg-white font-medium text-slate-600 placeholder-slate-400 transition-shadow shadow-sm">
+                            </div>
+                            <div class="text-sm font-medium text-slate-500 shrink-0">
+                                Total: <span id="statTotalStudents" class="font-bold text-[#0B2447]">--</span> students
+                            </div>
+                        </div>
+
+                        <!-- Student Cards Grid -->
+                        <div id="studentCardGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 max-h-[68vh] overflow-y-auto custom-scroll pr-1">
+                            <!-- Populated by JS -->
+                            <div class="col-span-full py-16 text-center text-slate-400">
+                                <i data-lucide="loader" class="animate-spin w-5 h-5 mx-auto mb-3 text-blue-500"></i>
+                                Loading secure registry...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROGRESSION REPORT SECTION (NEW) -->
+                <div id="section-progression" class="dashboard-section hidden">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50 max-w-3xl mx-auto">
+                        <div class="mb-8 border-b-2 border-dashed border-slate-100 pb-6 text-center">
+                            <h2 class="text-3xl font-black text-[#0B2447] tracking-tight">Assessment Logger</h2>
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Publish test marks directly to the student portal</p>
+                        </div>
+                        <form id="addProgressForm" class="space-y-6">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Select Student *</label>
+                                <div class="relative mb-3">
+                                    <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                    <input type="text" id="progStudentFilter" placeholder="Type a name, ID, or phone..." oninput="window.filterProgStudents()" class="pl-11 pr-4 py-3.5 border-2 border-slate-100 rounded-2xl w-full text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-300 bg-white shadow-sm placeholder-slate-400 transition-all">
+                                </div>
+                                <input type="hidden" id="progSelectStudent" required>
+                                <div id="progStudentPickerSelected" class="hidden mb-3 flex items-center gap-3 p-3 bg-blue-50 border-2 border-blue-200 rounded-2xl">
+                                    <div class="sp-avatar" id="progSelectedAvatar"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="sp-name truncate" id="progSelectedName"></div>
+                                        <div class="sp-id" id="progSelectedId"></div>
+                                    </div>
+                                    <button type="button" onclick="window.clearProgSelection()" class="text-slate-400 hover:text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                </div>
+                                <div id="progStudentPickerList" class="student-picker-list custom-scroll space-y-1.5 border-2 border-slate-100 rounded-2xl p-2 bg-white shadow-inner">
+                                    <div class="student-picker-empty">Search for a student above</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assessment Name *</label>
+                                <input type="text" id="progTestName" required class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[#0B2447] font-semibold text-sm shadow-sm" placeholder="e.g. Mid-Term Physics">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Date Conducted *</label>
+                                    <input type="date" id="progDate" required class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[#0B2447] font-semibold text-sm shadow-sm">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2 shadow-emerald-100">Obtained *</label>
+                                        <input type="number" step="0.5" min="0" id="progMarks" required class="w-full px-4 py-4 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-emerald-700 font-black text-center shadow-sm text-lg" placeholder="10">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total *</label>
+                                        <input type="number" step="0.5" min="1" id="progTotalMarks" required class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[#0B2447] font-black text-center shadow-sm text-lg" value="10">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" id="saveProgressBtnNative" class="w-full bg-[#0B2447] hover:bg-blue-600 text-white font-bold tracking-widest py-4 rounded-xl shadow-lg hover:shadow-xl transition-all mt-6 uppercase text-xs">
+                                Publish to Database
+                            </button>
+                        </form>
+
+                        <!-- Previous Results History -->
+                        <div id="progHistoryBlock" class="mt-10 hidden">
+                            <div class="border-t-2 border-dashed border-slate-200 pt-8">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                        Previous Results
+                                    </h3>
+                                    <span id="progHistoryCount" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">0 records</span>
+                                </div>
+                                <div id="progHistoryList" class="space-y-3 max-h-[400px] overflow-y-auto custom-scroll">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEES MANAGEMENT SECTION -->
+                <div id="section-fees" class="dashboard-section hidden">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50 max-w-3xl mx-auto">
+                        <div class="mb-8 border-b-2 border-dashed border-slate-100 pb-6 text-center">
+                            <h2 class="text-3xl font-black text-[#0B2447] tracking-tight">Fees Management</h2>
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Track installments & dues for each student</p>
+                        </div>
+
+                        <!-- Fee Collection Overview Panel -->
+                        <div id="feeOverviewSection" class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 min-h-[120px]">
+                            <div class="text-center text-slate-400 text-xs font-bold py-6 animate-pulse">Loading fee overview...</div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="border-t-2 border-dashed border-slate-100 mb-6"></div>
+
+                        <!-- Student Selector -->
+                        <div class="mb-6">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Select Student *</label>
+                            <div class="relative mb-3">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                <input type="text" id="feesStudentFilter" placeholder="Type a name, ID, or phone..." oninput="window.filterFeesStudents()" class="pl-11 pr-4 py-3.5 border-2 border-slate-100 rounded-2xl w-full text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-300 bg-white shadow-sm placeholder-slate-400 transition-all">
+                            </div>
+                            <input type="hidden" id="feesSelectStudent">
+                            <div id="feesStudentPickerSelected" class="hidden mb-3 flex items-center gap-3 p-3 bg-blue-50 border-2 border-blue-200 rounded-2xl">
+                                <div class="sp-avatar" id="feesSelectedAvatar"></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="sp-name truncate" id="feesSelectedName"></div>
+                                    <div class="sp-id" id="feesSelectedId"></div>
+                                </div>
+                                <button type="button" onclick="window.clearFeesSelection()" class="text-slate-400 hover:text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                            <div id="feesStudentPickerList" class="student-picker-list custom-scroll space-y-1.5 border-2 border-slate-100 rounded-2xl p-2 bg-white shadow-inner">
+                                <div class="student-picker-empty">Search for a student above</div>
+                            </div>
+                        </div>
+
+                        <!-- Fees Dashboard (hidden until student selected) -->
+                        <div id="feesDashboard" class="hidden">
+                            <!-- Student Header -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 bg-gradient-to-r from-[#0B2447] to-blue-600 rounded-2xl mb-6">
+                                <div>
+                                    <div id="feesStudentName" class="text-white font-black text-lg"></div>
+                                    <div id="feesStudentId" class="text-blue-200 text-[10px] font-bold uppercase tracking-widest"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div id="feesStatusBadge" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest"></div>
+                                </div>
+                            </div>
+
+                            <!-- Total Fees Setting -->
+                            <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+                                <div class="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-100 text-center">
+                                    <div class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Fees</div>
+                                    <div id="feesTotalDisplay" class="text-lg sm:text-2xl font-black text-[#0B2447]">&#8377;0</div>
+                                </div>
+                                <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-center">
+                                    <div class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Paid</div>
+                                    <div id="feesPaidDisplay" class="text-2xl font-black text-emerald-700">&#8377;0</div>
+                                </div>
+                                <div class="bg-red-50 rounded-xl p-4 border border-red-100 text-center">
+                                    <div class="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Remaining</div>
+                                    <div id="feesRemainingDisplay" class="text-2xl font-black text-red-600">&#8377;0</div>
+                                </div>
+                            </div>
+
+                            <!-- Set/Update Total Fees -->
+                            <div class="flex items-end gap-3 mb-8 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">Set Total Fees (&#8377;)</label>
+                                    <input type="number" id="feesTotalInput" min="0" step="100" class="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[#0B2447] font-black text-lg shadow-sm" placeholder="e.g. 25000">
+                                </div>
+                                <button onclick="window.saveTotalFees()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all whitespace-nowrap">
+                                    Update Total
+                                </button>
+                            </div>
+
+                            <!-- Subject Breakdown -->
+                            <div id="feesSubjectBreakdown" class="mb-8 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-4 shadow-sm">
+                                <h3 class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        Subject Fees Breakdown
+                                    </span>
+                                    <span class="text-[9px] text-indigo-500 bg-white px-2.5 py-0.5 rounded-full border border-indigo-200 shadow-sm font-black" id="feesSubjectCount">—</span>
+                                </h3>
+                                <div id="feesSubjectBreakdownList" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <div class="col-span-full text-xs text-slate-400 font-semibold py-2 animate-pulse">Loading...</div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mb-8">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Payment Progress</span>
+                                    <span id="feesProgressPercent" class="text-xs font-black text-[#0B2447]">0%</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="feesProgressBar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700" style="width:0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Installment History -->
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2">
+                                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                                        Installment History
+                                    </h3>
+                                    <span id="feesInstallmentCount" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">0 payments</span>
+                                </div>
+                                <div id="feesInstallmentList" class="space-y-3 max-h-[350px] overflow-y-auto custom-scroll">
+                                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
+                                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">No installments recorded yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add New Installment -->
+                            <div class="border-t-2 border-dashed border-slate-200 pt-6">
+                                <h4 class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                    Add New Installment
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Date *</label>
+                                        <input type="date" id="feeInstDate" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-[#0B2447] font-semibold text-sm shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">Amount Paid (&#8377;) *</label>
+                                        <input type="number" id="feeInstAmount" min="1" step="100" required class="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-emerald-700 font-black text-lg text-center shadow-sm" placeholder="5000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Mode</label>
+                                        <select id="feeInstMode" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[#0B2447] font-semibold text-sm shadow-sm">
+                                            <option value="Cash">Cash</option>
+                                            <option value="UPI">UPI</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button onclick="window.addInstallment()" id="addInstallmentBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold tracking-widest py-4 rounded-xl shadow-lg hover:shadow-xl transition-all mt-4 uppercase text-xs flex items-center justify-center gap-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    Record Installment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+                <!-- NOTES MANAGEMENT SECTION -->
+                <div id="section-notes" class="dashboard-section hidden">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50 max-w-4xl mx-auto">
+                        <div class="mb-8 border-b-2 border-dashed border-slate-100 pb-6 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-3xl font-black text-[#0B2447] tracking-tight">Notes Management</h2>
+                                <p class="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Upload and manage PDF study materials</p>
+                            </div>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <div class="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-10">
+                            <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2 mb-4">
+                                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload New Note
+                            </h3>
+                            <form id="uploadNoteForm" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Note Title *</label>
+                                        <input type="text" id="noteTitle" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm" placeholder="e.g. Physics Chap 1 Kinematics">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Target Class *</label>
+                                        <select id="noteClass" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                                            <option value="" disabled selected>Select Class</option>
+                                            <option value="Class 7">Class 7</option>
+                                            <option value="Class 8">Class 8</option>
+                                            <option value="Class 9">Class 9</option>
+                                            <option value="Class 10">Class 10</option>
+                                            <option value="Class 11">Class 11</option>
+                                            <option value="Class 12">Class 12</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">PDF File (Max 1MB) *</label>
+                                    <input type="file" id="noteFile" accept=".pdf" required class="w-full px-4 py-3 rounded-xl border border-dashed border-slate-300 focus:border-blue-500 outline-none bg-white font-medium shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                    <p class="text-[10px] text-red-500 font-bold mt-1 hidden" id="noteFileError">File size exceeds 1MB limit.</p>
+                                </div>
+                                <div class="pt-2">
+                                    <button type="submit" id="uploadNoteBtn" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex justify-center items-center gap-2">
+                                        <i data-lucide="upload" class="w-4 h-4"></i> Upload Note
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Notes List -->
+                        <div>
+                            <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2 mb-4">
+                                <i data-lucide="folder-open" class="w-4 h-4"></i> Uploaded Notes
+                            </h3>
+                            <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                <table class="w-full text-left border-collapse min-w-[600px]">
+                                    <thead>
+                                        <tr class="bg-slate-50/50 border-b border-slate-100">
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Title</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Class</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="notesTableBody" class="divide-y divide-slate-100">
+                                        <tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">Loading notes...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GALLERY MANAGEMENT SECTION -->
+                <div id="section-gallery" class="dashboard-section hidden">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50 max-w-4xl mx-auto">
+                        <div class="mb-8 border-b-2 border-dashed border-slate-100 pb-6 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-3xl font-black text-[#0B2447] tracking-tight">Gallery Management</h2>
+                                <p class="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Upload and manage website gallery images</p>
+                            </div>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <div class="bg-emerald-50/50 rounded-2xl p-6 border border-emerald-100 mb-10">
+                            <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2 mb-4">
+                                <i data-lucide="image-plus" class="w-4 h-4"></i> Upload New Image
+                            </h3>
+                            <form id="uploadGalleryForm" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Image Title *</label>
+                                        <input type="text" id="galleryTitle" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white font-medium shadow-sm" placeholder="e.g. Annual Sports Meet 2024">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Category *</label>
+                                        <select id="galleryCategory" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white font-medium shadow-sm">
+                                            <option value="" disabled selected>Select Category</option>
+                                            <option value="Academics">Academics</option>
+                                            <option value="Events">Events</option>
+                                            <option value="Sports">Sports</option>
+                                            <option value="Trips">Trips</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Grid Size</label>
+                                    <select id="gallerySize" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white font-medium shadow-sm">
+                                        <option value="span-4 row-span-1">Small (span-4 row-span-1)</option>
+                                        <option value="span-4 row-span-2">Tall (span-4 row-span-2)</option>
+                                        <option value="span-8 row-span-2">Large (span-8 row-span-2)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Image File (JPG/PNG) *</label>
+                                    <input type="file" id="galleryFile" accept="image/*" required class="w-full px-4 py-3 rounded-xl border border-dashed border-slate-300 focus:border-emerald-500 outline-none bg-white font-medium shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+                                </div>
+                                <div class="pt-2">
+                                    <button type="submit" id="uploadGalleryBtn" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-1 flex justify-center items-center gap-2">
+                                        <i data-lucide="upload" class="w-4 h-4"></i> Upload to Gallery
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Gallery List -->
+                        <div>
+                            <h3 class="text-sm font-black text-[#0B2447] uppercase tracking-widest flex items-center gap-2 mb-4">
+                                <i data-lucide="images" class="w-4 h-4"></i> Uploaded Images
+                            </h3>
+                            <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                <table class="w-full text-left border-collapse min-w-[600px]">
+                                    <thead>
+                                        <tr class="bg-slate-50/50 border-b border-slate-100">
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Preview</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Title</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
+                                            <th class="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="galleryTableBody" class="divide-y divide-slate-100">
+                                        <tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">Loading gallery...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <!-- ADD/EDIT STUDENT MODAL -->
+    <div id="studentModal" class="fixed inset-0 z-[60] hidden modal-overlay items-center justify-center p-4 overflow-y-auto" onclick="if(event.target===this) closeModal('studentModal')">
+        <div class="glass-panel bg-white/95 rounded-3xl w-full max-w-4xl shadow-2xl cursor-default my-8 relative overflow-hidden transition-all transform scale-100 border border-white">
+            <!-- Decorative Header Banner -->
+            <div class="h-4 bg-gradient-to-r from-[#0B2447] via-blue-600 to-[#F97316]"></div>
+            
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-20">
+                <div>
+                    <h3 class="font-black text-2xl text-[#0B2447]" id="studentModalTitle">Enrollment Form</h3>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Manual Database Entry</p>
+                </div>
+                <button onclick="closeModal('studentModal')" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="px-8 py-6 max-h-[75vh] overflow-y-auto custom-scroll">
+                <form id="addStudentForm" class="space-y-8">
+                    <input type="hidden" id="editStudentId">
+                    
+                    <!-- Section: Administrative Details -->
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="clipboard-list" class="w-4 h-4"></i> Administrative Records</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-5 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Admission No. (ID)</label>
+                                <input type="text" id="admin_admissionNo" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm" placeholder="e.g. VT-2024-001">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Personal Details -->
+                    <div>
+                        <h4 class="text-sm font-bold text-[#0B2447] uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Personal Demographics</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="lg:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Full Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="admin_name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                            </div>
+                            <div class="lg:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Father's Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="admin_fatherName" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Upload Photo (JPG/PNG)</label>
+                                <input type="file" id="admin_photo" accept="image/*" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm text-sm">
+                                <input type="hidden" id="admin_photoBase64">
+                                <img id="admin_photoPreview" src="" class="hidden mt-3 w-16 h-16 object-cover rounded-xl border-2 border-slate-200 shadow-sm" alt="Preview">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Gender <span class="text-red-500">*</span></label>
+                                <select id="admin_gender" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Blood Group</label>
+                                <input type="text" id="admin_bloodGroup" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm" placeholder="e.g. O+, A-">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Student Mobile <span class="text-red-500">*</span></label>
+                                <input type="tel" id="admin_mobile" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Parent Mobile <span class="text-red-500">*</span></label>
+                                <input type="tel" id="admin_parentMobile" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Academic Profile -->
+                    <div>
+                        <h4 class="text-sm font-bold text-[#F97316] uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4"></i> Academic Profile</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Educational Board <span class="text-red-500">*</span></label>
+                                <select id="admin_board" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                                    <option value="">Select Board</option>
+                                    <option value="Bihar Board">Bihar Board</option>
+                                    <option value="CBSE">CBSE</option>
+                                </select>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Class <span class="text-red-500">*</span></label>
+                                <select id="admin_course" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium shadow-sm">
+                                    <option value="Class 7">Class 7</option>
+                                    <option value="Class 8">Class 8</option>
+                                    <option value="Class 9">Class 9</option>
+                                    <option value="Class 10">Class 10</option>
+                                    <option value="Class 11">Class 11</option>
+                                    <option value="Class 12">Class 12</option>
+                                </select>
+                            </div>
+                            <div class="lg:col-span-2 relative group" id="admin-subject-wrapper">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Subject <span class="text-red-500">*</span></label>
+                                <input type="hidden" id="admin_class" name="admin_class" required>
+                                
+                                <div id="admin-subject-selector" tabindex="0" class="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-slate-200 bg-white flex flex-wrap gap-2 items-center cursor-pointer font-medium shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none">
+                                    <span id="admin-subject-placeholder" class="text-slate-400">Select Subjects</span>
+                                    <div id="admin-subject-tags" class="flex flex-wrap gap-1 w-full hidden"></div>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-transform duration-300" id="admin-subject-chevron">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                                
+                                <div id="admin-subject-menu" class="absolute z-30 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden hidden transform origin-top transition-all duration-200 opacity-0 translate-y-[-10px]">
+                                    <div class="p-1.5 space-y-0.5">
+                                        <label class="flex items-center px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
+                                            <div class="relative flex items-center justify-center w-4 h-4 mr-3">
+                                                <input type="checkbox" value="Physics" class="admin-subject-cb peer appearance-none w-4 h-4 border-2 border-slate-300 rounded focus:ring-2 focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer">
+                                                <svg class="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Physics</span>
+                                        </label>
+                                        <label class="flex items-center px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
+                                            <div class="relative flex items-center justify-center w-4 h-4 mr-3">
+                                                <input type="checkbox" value="Chemistry" class="admin-subject-cb peer appearance-none w-4 h-4 border-2 border-slate-300 rounded focus:ring-2 focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer">
+                                                <svg class="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Chemistry</span>
+                                        </label>
+                                        <label class="flex items-center px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
+                                            <div class="relative flex items-center justify-center w-4 h-4 mr-3">
+                                                <input type="checkbox" value="Maths" class="admin-subject-cb peer appearance-none w-4 h-4 border-2 border-slate-300 rounded focus:ring-2 focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer">
+                                                <svg class="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Maths</span>
+                                        </label>
+                                        <label class="flex items-center px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
+                                            <div class="relative flex items-center justify-center w-4 h-4 mr-3">
+                                                <input type="checkbox" value="Bio" class="admin-subject-cb peer appearance-none w-4 h-4 border-2 border-slate-300 rounded focus:ring-2 focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer">
+                                                <svg class="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Bio</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-6 border-t border-slate-100 flex justify-end gap-3 sticky bottom-0 bg-white/95 backdrop-blur z-10 py-4 -mx-8 px-8">
+                        <button type="button" onclick="closeModal('studentModal')" class="px-6 py-3 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Discard</button>
+                        <button type="submit" id="saveStudentBtn" class="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl hover:shadow-[0_5px_15px_rgba(37,99,235,0.4)] transition-all hover:-translate-y-0.5 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Commit Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATE FEES MODAL -->
+    <div id="feesModal" class="fixed inset-0 z-[60] hidden modal-overlay items-center justify-center p-4 cursor-pointer" onclick="if(event.target===this) closeModal('feesModal')">
+        <div class="glass-panel bg-white/95 rounded-3xl w-full max-w-md shadow-2xl cursor-default border border-white">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50/50 rounded-t-3xl">
+                <div>
+                    <h3 class="font-black text-xl text-[#0B2447]">Manage Fees</h3>
+                    <p class="text-xs font-bold text-slate-500 uppercase mt-1 tracking-widest truncate max-w-[250px]" id="feeStudentName">Student Name</p>
+                </div>
+                <button onclick="closeModal('feesModal')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm p-2.5 rounded-full transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="p-8">
+                <form id="updateFeesForm" class="space-y-6">
+                    <input type="hidden" id="feeStudentId">
+                    
+                    <div class="relative group">
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-widest">Total Course Fee (Expected)</label>
+                        <div class="relative">
+                            <i data-lucide="indian-rupee" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="number" id="feeTotal" required class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 font-black text-xl text-[#0B2447] transition-all">
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <label class="block text-xs font-bold text-green-600 mb-1.5 uppercase tracking-widest">Amount Paid To Date</label>
+                        <div class="relative">
+                            <i data-lucide="indian-rupee" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-green-600"></i>
+                            <input type="number" id="feePaid" required class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-green-200 focus:ring-2 focus:ring-green-500 outline-none bg-green-50 font-black text-xl text-green-700 transition-all">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="saveFeeBtn" class="w-full px-6 py-4 mt-8 text-sm font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-900 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5"></i> Execute Ledger Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATE PROGRESS MODAL -->
+    <div id="progressModal" class="fixed inset-0 z-[60] hidden modal-overlay items-center justify-center p-4 cursor-pointer" onclick="if(event.target===this) closeModal('progressModal')">
+        <div class="glass-panel bg-white/95 rounded-3xl w-full max-w-md shadow-2xl cursor-default border border-white relative overflow-hidden">
+            <!-- Decorative Header Banner -->
+            <div class="h-2 bg-gradient-to-r from-indigo-500 to-indigo-600"></div>
+            
+            <div class="p-6 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
+                <div>
+                    <h3 class="font-black text-xl text-indigo-900">New Assessment</h3>
+                    <p class="text-xs font-bold text-indigo-500 uppercase mt-1 tracking-widest truncate max-w-[250px]" id="progressStudentName">Student Name</p>
+                </div>
+                <button onclick="closeModal('progressModal')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm p-2.5 rounded-full transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="p-8">
+                <form id="progressForm" class="space-y-6">
+                    <input type="hidden" id="progressStudentId">
+                    
+                    <div class="relative group">
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-widest">Test Name</label>
+                        <div class="relative">
+                            <i data-lucide="file-text" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="progTestName" required placeholder="e.g. Weekly Mock 1" class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 font-bold text-slate-800 transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="relative group">
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-widest">Date of Examination</label>
+                        <div class="relative">
+                            <i data-lucide="calendar" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="date" id="progDate" required class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 font-bold text-slate-800 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative group">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1.5 uppercase tracking-widest">Marks Obtained</label>
+                            <input type="number" id="progObtained" step="0.5" min="0" required class="w-full px-4 py-3.5 rounded-xl border border-emerald-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50 font-black text-xl text-emerald-700 transition-all text-center">
+                        </div>
+                        <div class="relative group">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-widest">Total Marks</label>
+                            <input type="number" id="progTotal" step="0.5" min="1" required class="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 font-black text-xl text-[#0B2447] transition-all text-center">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="saveProgressBtn" class="w-full px-6 py-4 mt-8 text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5"></i> Publish Form
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Modals
+        function openModal(id) { 
+            const m = document.getElementById(id);
+            m.classList.remove('hidden'); 
+            m.classList.add('flex');
+            // Little animation for pop effect
+            m.children[0].style.transform = 'scale(0.95)';
+            m.children[0].style.opacity = '0';
+            setTimeout(() => {
+                m.children[0].style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                m.children[0].style.transform = 'scale(1)';
+                m.children[0].style.opacity = '1';
+            }, 10);
+        }
+        function closeModal(id) { 
+            const m = document.getElementById(id);
+            m.children[0].style.transform = 'scale(0.95)';
+            m.children[0].style.opacity = '0';
+            setTimeout(() => {
+                m.classList.remove('flex'); 
+                m.classList.add('hidden');
+            }, 200);
+        }
+
+        // Sidebar Toggle (Desktop)
+        var sidebar = document.getElementById('sidebar');
+        var desktopToggle = document.getElementById('desktopToggle');
+
+        desktopToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            var btn = document.getElementById('desktopToggle');
+            if (sidebar.classList.contains('collapsed')) {
+                btn.innerHTML = '<i data-lucide="chevron-right" id="desktopToggleIcon" class="w-4 h-4 text-black" style="stroke-width: 3px;"></i>';
+            } else {
+                btn.innerHTML = '<i data-lucide="chevron-left" id="desktopToggleIcon" class="w-4 h-4 text-black" style="stroke-width: 3px;"></i>';
+            }
+            lucide.createIcons();
+        });
+
+        // Mobile sidebar open/close
+        function openMobileSidebar() {
+            document.getElementById('sidebar').classList.add('mobile-open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+        function closeMobileSidebar() {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+        // Expose globally
+        window.openMobileSidebar = openMobileSidebar;
+        window.closeMobileSidebar = closeMobileSidebar;
+    </script>
+    <script type="module" src="admin-script.js"></script>
+</body>
+</html>

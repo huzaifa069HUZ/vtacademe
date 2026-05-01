@@ -1,0 +1,10 @@
+# VT Academe - robots.txt
+# https://vtacademe.com
+
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /admin-script.js
+
+# Sitemap
+Sitemap: https://vtacademe.com/sitemap.xml
