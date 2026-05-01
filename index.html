@@ -4294,9 +4294,21 @@
         });
     </script>
 
-    <!-- Inquiry Form Email Submission -->
-    <script>
-        function showToast(type, message) {
+    <!-- Inquiry Form & Firebase Submission -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            authDomain: "vt-academy-37e0e.firebaseapp.com",
+            projectId: "vt-academy-37e0e",
+            storageBucket: "vt-academy-37e0e.firebasestorage.app",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.showToast = function(type, message) {
             const existing = document.getElementById('mcs-toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
@@ -4317,22 +4329,21 @@
             document.body.appendChild(toast);
             requestAnimationFrame(() => { toast.style.transform = 'translateY(0)'; toast.style.opacity = '1'; });
             setTimeout(() => { toast.style.transform = 'translateY(20px)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4500);
-        }
+        };
 
-        async function submitInquiryForm(e) {
+        window.submitInquiryForm = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('inq-submit-btn');
             const btnText = document.getElementById('inq-submit-text');
             const studentName = document.getElementById('inq-student-name')?.value?.trim();
             const parentName = document.getElementById('inq-parent-name')?.value?.trim();
             const grade = document.getElementById('inq-grade')?.value?.trim();
-            const board = document.getElementById('inq-board')?.value?.trim();
             const branch = document.getElementById('inq-branch')?.value?.trim();
             const phone = document.getElementById('inq-phone')?.value?.trim();
             const email = document.getElementById('inq-email')?.value?.trim();
 
             if (!studentName || !parentName || !phone || !branch) {
-                showToast('error', 'Please fill in all required fields.');
+                window.showToast('error', 'Please fill in all required fields.');
                 return;
             }
 
@@ -4340,26 +4351,86 @@
             if (btnText) btnText.textContent = 'Sending...';
 
             try {
-                const res = await fetch('/api/send-email', {
+                // Save lead to Firestore
+                await addDoc(collection(db, "leads"), {
+                    studentName,
+                    parentName,
+                    grade,
+                    branch,
+                    phone,
+                    email,
+                    source: 'Main Inquiry Form',
+                    status: 'New',
+                    createdAt: serverTimestamp()
+                });
+
+                // Send email notification
+                fetch('/api/send-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ formType: 'inquiry', studentName, parentName, grade, board, branch, phone, email })
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    showToast('success', 'Inquiry sent! We\'ll be in touch very soon.');
-                    document.getElementById('inquiry-form')?.reset();
-                } else {
-                    throw new Error(data.error || 'Server error');
-                }
+                    body: JSON.stringify({ formType: 'inquiry', studentName, parentName, grade, branch, phone, email })
+                }).catch(e => console.error("Email API Error:", e));
+
+                window.showToast('success', 'Inquiry sent! We\'ll be in touch very soon.');
+                document.getElementById('inquiry-form')?.reset();
             } catch (err) {
-                showToast('error', 'Could not send. Please call +91 8083832058.');
+                window.showToast('error', 'Could not send. Please call +91 8083832058.');
                 console.error(err);
             } finally {
                 btn.disabled = false;
                 if (btnText) btnText.textContent = 'Submit Inquiry';
             }
-        }
+        };
+
+        window.submitPopupForm = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('popup-submit-btn');
+            const btnText = document.getElementById('popup-submit-text');
+            const studentName = document.getElementById('popup-student-name')?.value?.trim();
+            const phone = document.getElementById('popup-phone')?.value?.trim();
+            const grade = document.getElementById('popup-grade')?.value?.trim();
+            const branch = document.getElementById('popup-branch')?.value?.trim();
+
+            if (!studentName || !phone || !grade || !branch) {
+                window.showToast('error', 'Please fill in all required fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            if (btnText) btnText.textContent = 'Sending...';
+
+            try {
+                // Save lead to Firestore
+                await addDoc(collection(db, "leads"), {
+                    studentName,
+                    parentName: 'N/A', // Not asked in popup
+                    grade,
+                    branch,
+                    phone,
+                    email: '', // Not asked in popup
+                    source: 'Popup Demo Form',
+                    status: 'New',
+                    createdAt: serverTimestamp()
+                });
+
+                // Send email notification
+                fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ formType: 'inquiry', studentName, parentName: 'N/A', grade, branch, phone, email: '' })
+                }).catch(e => console.error("Email API Error:", e));
+
+                window.closeInquiryPopup();
+                window.showToast('success', 'Thank you! We will contact you shortly.');
+                document.getElementById('popup-inquiry-form')?.reset();
+            } catch (err) {
+                window.showToast('error', 'Could not send. Please call +91 8083832058.');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                if (btnText) btnText.textContent = 'BOOK DEMO CLASS';
+            }
+        };
     </script>
     <script src="js/sidebar.js"></script>
 
@@ -4528,19 +4599,18 @@
                 <p class="text-sm text-gray-500">Register now for a free demo class.</p>
             </div>
 
-            <form id="popup-inquiry-form"
-                onsubmit="event.preventDefault(); closeInquiryPopup(); alert('Thank you! We will contact you shortly.');">
+            <form id="popup-inquiry-form" onsubmit="window.submitPopupForm(event)">
                 <div class="space-y-5">
                     <div>
-                        <input type="text" placeholder="Student Name *" required
+                        <input type="text" id="popup-student-name" placeholder="Student Name *" required
                             class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F97316] focus:bg-white transition-colors" />
                     </div>
                     <div>
-                        <input type="tel" placeholder="Phone Number *" required
+                        <input type="tel" id="popup-phone" placeholder="Phone Number *" required
                             class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F97316] focus:bg-white transition-colors" />
                     </div>
                     <div>
-                        <select required
+                        <select id="popup-grade" required
                             class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F97316] focus:bg-white transition-colors text-gray-600">
                             <option value="">Select Class *</option>
                             <option value="Class 7">Class 7</option>
@@ -4553,16 +4623,16 @@
                     </div>
 
                     <div>
-                        <select required
+                        <select id="popup-branch" required
                             class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F97316] focus:bg-white transition-colors text-gray-600">
                             <option value="">Select Branch *</option>
                             <option value="phulwari block">phulwari block</option>
                             <option value="phulwari golambar">phulwari golambar</option>
                         </select>
                     </div>
-                    <button type="submit"
+                    <button type="submit" id="popup-submit-btn"
                         class="w-full bg-[#0B2447] text-white font-bold text-sm tracking-widest uppercase py-4 rounded-xl hover:bg-[#F97316] transition-colors shadow-lg shadow-[#0B2447]/20 mt-2">
-                        BOOK DEMO CLASS
+                        <span id="popup-submit-text">BOOK DEMO CLASS</span>
                     </button>
                 </div>
             </form>

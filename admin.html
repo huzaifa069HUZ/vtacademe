@@ -154,6 +154,10 @@
                     <i data-lucide="users" class="w-5 h-5 shrink-0"></i> 
                     <span class="text-[15px]">Students</span>
                 </a>
+                <a href="#" onclick="switchSection('leads'); closeMobileSidebar();" id="nav-leads" class="flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all">
+                    <i data-lucide="magnet" class="w-5 h-5 shrink-0"></i> 
+                    <span class="text-[15px]">Leads</span>
+                </a>
                 <button onclick="openModal('studentModal'); document.getElementById('addStudentForm').reset(); document.getElementById('editStudentId').value=''; document.getElementById('admin_photoPreview').classList.add('hidden'); document.getElementById('studentModalTitle').innerText = 'Enrollment Form'; closeMobileSidebar();" class="w-full flex items-center gap-4 px-8 py-4 text-[#5E6E82] hover:text-[#0B2447] font-semibold transition-all group">
                     <i data-lucide="plus-circle" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></i> 
                     <span class="text-[15px]">Register New</span>
@@ -227,6 +231,39 @@
                                 <i data-lucide="loader" class="animate-spin w-5 h-5 mx-auto mb-3 text-blue-500"></i>
                                 Loading secure registry...
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LEADS SECTION (NEW) -->
+                <div id="section-leads" class="dashboard-section hidden">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-50">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                            <div>
+                                <h2 class="text-2xl font-black text-[#0B2447] tracking-tight">Incoming Leads</h2>
+                                <p class="text-slate-500 font-bold uppercase tracking-widest text-xs mt-1">Website inquiries & popups</p>
+                            </div>
+                            <div class="text-sm font-medium text-slate-500 shrink-0">
+                                Total: <span id="statTotalLeads" class="font-bold text-[#0B2447]">--</span> leads
+                            </div>
+                        </div>
+
+                        <!-- Leads List -->
+                        <div class="overflow-x-auto custom-scroll">
+                            <table class="w-full min-w-[800px] text-left">
+                                <thead>
+                                    <tr class="border-b-2 border-slate-100">
+                                        <th class="pb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Date & Source</th>
+                                        <th class="pb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student info</th>
+                                        <th class="pb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact</th>
+                                        <th class="pb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Interest</th>
+                                        <th class="pb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right pr-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leadsTableBody" class="divide-y divide-slate-50">
+                                    <tr><td colspan="5" class="py-8 text-center text-slate-400"><i data-lucide="loader" class="animate-spin w-5 h-5 mx-auto mb-2"></i> Loading leads...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

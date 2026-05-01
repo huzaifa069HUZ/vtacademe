@@ -567,6 +567,12 @@ window.switchSection = (sectionId) => {
         document.getElementById('nav-gallery').classList.add('nav-active', 'text-white', 'font-bold');
         document.getElementById('nav-gallery').classList.remove('text-[#5E6E82]');
         if(window.loadGallery) window.loadGallery();
+    } else if (sectionId === 'leads') {
+        document.getElementById('section-leads').classList.remove('hidden');
+        document.getElementById('section-leads').classList.add('block');
+        document.getElementById('nav-leads').classList.add('nav-active', 'text-white', 'font-bold');
+        document.getElementById('nav-leads').classList.remove('text-[#5E6E82]');
+        if(window.fetchLeads) window.fetchLeads();
     }
 };
 
@@ -1409,5 +1415,117 @@ window.deleteGalleryImage = async function(imgId) {
     } catch (error) {
         console.error("Error deleting image:", error);
         alert("Failed to delete image.");
+    }
+};
+
+// ==========================================
+// LEADS MANAGEMENT
+// ==========================================
+
+window.fetchLeads = async function() {
+    const tbody = document.getElementById('leadsTableBody');
+    const statTotal = document.getElementById('statTotalLeads');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400"><i data-lucide="loader" class="animate-spin w-5 h-5 mx-auto mb-2 text-blue-500"></i> Loading leads...</td></tr>';
+    lucide.createIcons();
+
+    try {
+        const q = query(collection(db, "leads"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        
+        const leads = [];
+        snap.forEach(doc => {
+            leads.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (statTotal) statTotal.textContent = leads.length;
+        window.renderLeads(leads);
+    } catch (err) {
+        console.error("Error fetching leads:", err);
+        // Fallback without ordering in case index is missing
+        try {
+            const snap = await getDocs(collection(db, "leads"));
+            const leads = [];
+            snap.forEach(doc => {
+                leads.push({ id: doc.id, ...doc.data() });
+            });
+            // Sort client side
+            leads.sort((a, b) => {
+                const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                return dateB - dateA;
+            });
+            if (statTotal) statTotal.textContent = leads.length;
+            window.renderLeads(leads);
+        } catch (innerErr) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Failed to load leads: ${innerErr.message}</td></tr>`;
+        }
+    }
+};
+
+window.renderLeads = function(data) {
+    const tbody = document.getElementById('leadsTableBody');
+    if (!tbody) return;
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center"><div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 text-slate-400 mb-3"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg></div><p class="text-sm font-bold text-slate-400 uppercase tracking-widest">No inquiries yet</p></td></tr>';
+        return;
+    }
+
+    let html = '';
+    data.forEach(lead => {
+        const dateStr = lead.createdAt ? lead.createdAt.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown Date';
+        const sourceColor = lead.source === 'Popup Demo Form' ? 'text-[#F97316] bg-[#F97316]/10' : 'text-blue-600 bg-blue-50';
+        
+        html += `
+            <tr class="hover:bg-slate-50/50 transition-colors group">
+                <td class="p-4 align-top">
+                    <div class="text-[13px] font-bold text-[#0B2447] mb-1">${dateStr}</div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${sourceColor}">${lead.source || 'Website'}</span>
+                </td>
+                <td class="p-4 align-top">
+                    <div class="text-[14px] font-black text-[#0B2447] capitalize">${lead.studentName || 'Unnamed'}</div>
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase mt-0.5"><span class="text-slate-300 mr-1">P:</span>${lead.parentName || 'N/A'}</div>
+                </td>
+                <td class="p-4 align-top">
+                    <div class="flex items-center gap-1.5 text-[13px] font-semibold text-slate-600 mb-1">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        ${lead.phone || 'N/A'}
+                    </div>
+                    ${lead.email ? `
+                    <div class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        ${lead.email}
+                    </div>
+                    ` : ''}
+                </td>
+                <td class="p-4 align-top">
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-md text-[10px] font-bold uppercase tracking-wide">${lead.grade || 'Any'}</span>
+                        <span class="px-2 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-md text-[10px] font-bold uppercase tracking-wide">${lead.branch || 'Any'}</span>
+                    </div>
+                </td>
+                <td class="p-4 align-top text-right">
+                    <button onclick="window.deleteLead('${lead.id}')" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none" title="Delete Lead">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+};
+
+window.deleteLead = async function(id) {
+    if (confirm("Are you sure you want to permanently delete this lead?")) {
+        try {
+            await deleteDoc(doc(db, "leads", id));
+            window.fetchLeads();
+        } catch (error) {
+            console.error("Error deleting lead:", error);
+            alert("Failed to delete lead. Permission Error.");
+        }
     }
 };
