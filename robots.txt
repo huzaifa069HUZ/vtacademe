@@ -1,10 +1,36 @@
-# VT Academe - robots.txt
+# VT Academe (VT Academy) - robots.txt
 # https://vtacademe.com
 
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /admission.html
+Allow: /gallery.html
+Allow: /notes.html
+Allow: /student-portal.html
+Allow: /logo-with-text.png
+Allow: /logo1.png
+Allow: /logo.jpeg
 Disallow: /admin.html
 Disallow: /admin-script.js
+Disallow: /js/
+
+# Google Bot - Full Access
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
 
 # Sitemap
 Sitemap: https://vtacademe.com/sitemap.xml
+
+# Host
+Host: https://vtacademe.com

@@ -5,45 +5,74 @@
   <!-- Homepage -->
   <url>
     <loc>https://vtacademe.com/</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
-      <image:title>VT Academe Logo - Best Coaching in Patna</image:title>
+      <image:title>VT Academe (VT Academy) Coaching Institute Patna Logo</image:title>
+      <image:caption>Official logo of VT Academe, also known as VT Academy — best coaching institute in Patna, Bihar</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vtacademe.com/hero%20bg%202.png</image:loc>
+      <image:title>VT Academy Patna Campus — Best Coaching in Phulwari Sharif</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo1.png</image:loc>
+      <image:title>VT Academe VT Academy Emblem</image:title>
     </image:image>
   </url>
 
   <!-- Admission Page -->
   <url>
     <loc>https://vtacademe.com/admission.html</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
+      <image:title>VT Academy (VT Academe) Admission Open 2026 Patna</image:title>
+      <image:caption>Admission open at VT Academe coaching classes in Patna for NEET, JEE, Foundation and Board exams</image:caption>
+    </image:image>
   </url>
 
   <!-- Gallery Page -->
   <url>
     <loc>https://vtacademe.com/gallery.html</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
+      <image:title>VT Academy Patna Campus Gallery Photos</image:title>
+      <image:caption>Photo gallery of VT Academe (VT Academy) coaching campus, events, and student activities in Patna</image:caption>
+    </image:image>
   </url>
 
   <!-- Notes & Study Materials -->
   <url>
     <loc>https://vtacademe.com/notes.html</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
+      <image:title>Free Study Notes from VT Academy (VT Academe) Patna</image:title>
+      <image:caption>Download free NEET, JEE and Board exam study notes from VT Academe coaching classes Patna</image:caption>
+    </image:image>
   </url>
 
   <!-- Student Portal -->
   <url>
     <loc>https://vtacademe.com/student-portal.html</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
+      <image:title>VT Academy Student Portal — Results and Fee Tracking</image:title>
+      <image:caption>Student portal for VT Academe (VT Academy) Patna — check results, fees and academic progress</image:caption>
+    </image:image>
   </url>
 
 </urlset>
