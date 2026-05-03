@@ -75,4 +75,17 @@
     </image:image>
   </url>
 
+  <!-- Scoreboard / Leaderboard -->
+  <url>
+    <loc>https://vtacademe.com/scoreboard.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://vtacademe.com/logo-with-text.png</image:loc>
+      <image:title>VT Academy (VT Academe) Scoreboard — Test Leaderboard Rankings</image:title>
+      <image:caption>Live student test rankings and scoreboard at VT Academe (VT Academy) coaching institute Patna</image:caption>
+    </image:image>
+  </url>
+
 </urlset>

@@ -246,15 +246,13 @@
     <link rel="preload" href="logo-with-text.png" as="image" type="image/png" fetchpriority="high">
 
     <!-- Favicon & App Icons -->
-    <link rel="icon" type="image/jpeg" sizes="32x32" href="logo.jpeg">
-    <link rel="icon" type="image/jpeg" sizes="48x48" href="logo.jpeg">
-    <link rel="icon" type="image/jpeg" sizes="96x96" href="logo.jpeg">
-    <link rel="shortcut icon" href="logo.jpeg">
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="logo.jpeg">
-    <link rel="apple-touch-icon" sizes="180x180" href="logo.jpeg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon-512x512.png">
+    <link rel="shortcut icon" href="favicon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <meta name="theme-color" content="#0B2447">
     <meta name="msapplication-TileColor" content="#0B2447">
-    <meta name="msapplication-TileImage" content="logo.jpeg">
+    <meta name="msapplication-TileImage" content="favicon-192x192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Smooth Page Transition System -->
     <style>
@@ -993,6 +991,12 @@
                     <span
                         class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F97316] transition-all duration-300 group-hover:w-full"></span>
                 </a>
+                <a href="scoreboard.html"
+                    class="nav-link relative py-2 text-white hover:text-[#F97316] transition-colors duration-300 group">
+                    Scoreboard
+                    <span
+                        class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F97316] transition-all duration-300 group-hover:w-full"></span>
+                </a>
             </nav>
 
             <!-- Action Buttons — hidden until lg to avoid cramping at md -->
@@ -1101,6 +1105,15 @@
                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
                 Notes
+            </a>
+            <a href="scoreboard.html" onclick="closeMobileMenu()" class="mobile-nav-link"
+                style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;letter-spacing:0.03em;text-decoration:none;border:1px solid transparent;transition:all 0.25s ease;">
+                <svg style="width:18px;height:18px;flex-shrink:0;color:#F97316;" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Scoreboard
             </a>
         </nav>
 
@@ -4058,8 +4071,8 @@
                 <div class="lg:col-span-2">
                     <!-- Logo and ACADEMY Name -->
                     <div class="flex items-center gap-4 mb-6">
-                        <div class="inline-block">
-                            <img src="logo1.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo" class="h-24 w-auto drop-shadow-lg">
+                        <div class="inline-block bg-white rounded-2xl p-2 shadow-lg">
+                            <img src="logo.jpeg" alt="VT Academe (VT Academy) Coaching Institute Patna Logo" class="h-20 w-auto rounded-xl">
                         </div>
                         <div class="flex flex-col">
                             <span class="text-3xl title-font tracking-[0.05em] text-white font-bold leading-none">
@@ -4110,6 +4123,8 @@
                                 class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Campus Gallery</a></li>
                         <li><a href="notes.html"
                                 class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Free Study Notes</a></li>
+                        <li><a href="scoreboard.html"
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Scoreboard</a></li>
                         <li><a href="student-portal.html"
                                 class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Student Portal</a></li>
                     </ul>

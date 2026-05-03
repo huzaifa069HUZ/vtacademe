@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -547,6 +547,12 @@ window.switchSection = (sectionId) => {
         document.getElementById('nav-progression').classList.remove('text-[#5E6E82]');
         populateProgressionDropdown();
         document.getElementById('progStudentFilter').value = '';
+    } else if (sectionId === 'scoreboard') {
+        document.getElementById('section-scoreboard').classList.remove('hidden');
+        document.getElementById('section-scoreboard').classList.add('block');
+        document.getElementById('nav-scoreboard').classList.add('nav-active', 'text-white', 'font-bold');
+        document.getElementById('nav-scoreboard').classList.remove('text-[#5E6E82]');
+        loadScoreboardTests();
     } else if (sectionId === 'fees') {
         document.getElementById('section-fees').classList.remove('hidden');
         document.getElementById('section-fees').classList.add('block');
@@ -729,7 +735,26 @@ document.getElementById('addProgressForm')?.addEventListener('submit', async (e)
             createdAt: serverTimestamp()
         };
 
-        await addDoc(collection(db, "students", id, "assessments"), payload);
+        // Write to student's assessments subcollection
+        const assessRef = await addDoc(collection(db, "students", id, "assessments"), payload);
+
+        // Dual-write to scoreboard collection for leaderboard aggregation
+        const student = studentsList.find(function(s) { return s.id === id; });
+        const percentage = total > 0 ? ((obtained / total) * 100) : 0;
+        await addDoc(collection(db, "scoreboard"), {
+            testName: tName,
+            date: pDate,
+            studentId: id,
+            assessmentId: assessRef.id,
+            studentName: student ? student.name : 'Unknown',
+            studentPhoto: student ? (student.photoBase64 || '') : '',
+            course: student ? (student.course || '') : '',
+            admissionNo: student ? (student.admissionNo || student.formNo || '') : '',
+            obtained: obtained,
+            total: total,
+            percentage: Math.round(percentage * 10) / 10,
+            createdAt: serverTimestamp()
+        });
         
         // Reset only the test fields, keep the student selected
         document.getElementById('progTestName').value = '';
@@ -823,7 +848,20 @@ window.deleteAssessment = async function(studentId, assessmentId) {
     if (!confirm('Delete this assessment result permanently?')) return;
 
     try {
+        // Delete from student's subcollection
         await deleteDoc(doc(db, 'students', studentId, 'assessments', assessmentId));
+
+        // Also delete from scoreboard collection
+        try {
+            const sbQuery = query(collection(db, 'scoreboard'), where('assessmentId', '==', assessmentId), where('studentId', '==', studentId));
+            const sbSnap = await getDocs(sbQuery);
+            sbSnap.forEach(async function(d) {
+                await deleteDoc(doc(db, 'scoreboard', d.id));
+            });
+        } catch(sbErr) {
+            console.warn('Scoreboard cleanup failed (non-critical):', sbErr);
+        }
+
         await loadStudentAssessments(studentId);
     } catch(err) {
         console.error(err);
@@ -1529,3 +1567,222 @@ window.deleteLead = async function(id) {
         }
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// SCOREBOARD / LEADERBOARD (ADMIN VIEW)
+// ═══════════════════════════════════════════════════════════════════
+
+var scoreboardTestNames = [];
+var scoreboardActiveTest = null;
+var scoreboardActiveClass = 'all';
+
+async function loadScoreboardTests() {
+    var testListEl = document.getElementById('scoreboardTestList');
+    var leaderboardEl = document.getElementById('scoreboardLeaderboard');
+
+    testListEl.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Loading tests...</div>';
+    leaderboardEl.innerHTML = '';
+
+    try {
+        var snap = await getDocs(collection(db, 'scoreboard'));
+        var testMap = {};
+
+        snap.forEach(function(d) {
+            var data = d.data();
+            var name = data.testName || 'Untitled';
+            if (!testMap[name]) {
+                testMap[name] = { count: 0, date: data.date || '', courses: new Set() };
+            }
+            testMap[name].count++;
+            if (data.course) testMap[name].courses.add(data.course);
+        });
+
+        scoreboardTestNames = Object.keys(testMap).sort();
+
+        if (scoreboardTestNames.length === 0) {
+            testListEl.innerHTML = '<div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">' +
+                '<div class="text-3xl mb-3">🏆</div>' +
+                '<p class="text-xs font-bold uppercase tracking-widest text-slate-400">No scoreboard entries yet. Publish assessments with the same test name to build leaderboards.</p>' +
+                '</div>';
+            return;
+        }
+
+        var html = '';
+        scoreboardTestNames.forEach(function(name) {
+            var info = testMap[name];
+            var isActive = name === scoreboardActiveTest;
+            html += '<button onclick="window.loadAdminLeaderboard(\'' + name.replace(/'/g, "\\'") + '\')" ' +
+                'class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border-2 transition-all ' +
+                (isActive ? 'bg-[#0B2447] text-white border-[#0B2447] shadow-lg' : 'bg-white text-[#0B2447] border-slate-100 hover:border-blue-300 hover:bg-blue-50') + '">' +
+                '<div class="text-left">' +
+                    '<div class="text-sm font-black uppercase tracking-wide">' + name + '</div>' +
+                    '<div class="text-[10px] font-bold ' + (isActive ? 'text-blue-200' : 'text-slate-400') + ' uppercase tracking-widest mt-0.5">' + info.count + ' entries · ' + (info.date || 'N/A') + '</div>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                    '<span class="text-[9px] font-black px-2 py-1 rounded-lg ' + (isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500') + '">' + info.count + '</span>' +
+                    '<svg class="w-4 h-4 ' + (isActive ? 'text-white' : 'text-slate-300') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>' +
+                '</div>' +
+            '</button>';
+        });
+
+        testListEl.innerHTML = html;
+
+        // Auto-load first test if none active
+        if (!scoreboardActiveTest && scoreboardTestNames.length > 0) {
+            window.loadAdminLeaderboard(scoreboardTestNames[0]);
+        } else if (scoreboardActiveTest) {
+            window.loadAdminLeaderboard(scoreboardActiveTest);
+        }
+
+    } catch(err) {
+        console.error('Error loading scoreboard tests:', err);
+        testListEl.innerHTML = '<div class="text-xs text-red-600 font-bold p-4 bg-red-50 rounded-xl border border-red-200">Failed to load: ' + err.message + '</div>';
+    }
+}
+
+window.loadAdminLeaderboard = async function(testName) {
+    scoreboardActiveTest = testName;
+    var leaderboardEl = document.getElementById('scoreboardLeaderboard');
+    var testTitleEl = document.getElementById('scoreboardTestTitle');
+
+    leaderboardEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Loading leaderboard...</div>';
+    if (testTitleEl) testTitleEl.textContent = testName;
+
+    // Re-render test list to highlight active
+    loadScoreboardTestButtons();
+
+    try {
+        var q = query(collection(db, 'scoreboard'), where('testName', '==', testName));
+        var snap = await getDocs(q);
+
+        var entries = [];
+        snap.forEach(function(d) {
+            entries.push({ id: d.id, ...d.data() });
+        });
+
+        // Filter by class if not 'all'
+        if (scoreboardActiveClass !== 'all') {
+            entries = entries.filter(function(e) { return e.course === scoreboardActiveClass; });
+        }
+
+        // Sort by percentage descending, then by obtained marks descending
+        entries.sort(function(a, b) {
+            if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+            return (b.obtained || 0) - (a.obtained || 0);
+        });
+
+        // Build class filter pills
+        var allCourses = new Set();
+        snap.forEach(function(d) { if (d.data().course) allCourses.add(d.data().course); });
+        var classFilterHtml = '<div class="flex flex-wrap gap-2 mb-6">';
+        classFilterHtml += '<button onclick="window.filterScoreboardClass(\'all\')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ' +
+            (scoreboardActiveClass === 'all' ? 'bg-[#0B2447] text-white border-[#0B2447]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300') + '">All Classes</button>';
+        allCourses.forEach(function(cls) {
+            classFilterHtml += '<button onclick="window.filterScoreboardClass(\'' + cls + '\')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ' +
+                (scoreboardActiveClass === cls ? 'bg-[#0B2447] text-white border-[#0B2447]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300') + '">' + cls + '</button>';
+        });
+        classFilterHtml += '</div>';
+
+        if (entries.length === 0) {
+            leaderboardEl.innerHTML = classFilterHtml + '<div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">' +
+                '<p class="text-xs font-bold uppercase tracking-widest text-slate-400">No entries for this filter.</p>' +
+                '</div>';
+            return;
+        }
+
+        var html = classFilterHtml;
+        html += '<div class="space-y-2">';
+
+        entries.forEach(function(entry, index) {
+            var rank = index + 1;
+            var perc = entry.percentage || 0;
+            var percColor = perc >= 75 ? 'text-emerald-600' : perc >= 60 ? 'text-blue-600' : perc >= 45 ? 'text-yellow-600' : 'text-red-600';
+            var barColor = perc >= 75 ? 'bg-emerald-500' : perc >= 60 ? 'bg-blue-500' : perc >= 45 ? 'bg-yellow-500' : 'bg-red-500';
+
+            var medalHtml = '';
+            if (rank === 1) medalHtml = '<div class="w-8 h-8 rounded-lg bg-yellow-100 border border-yellow-300 flex items-center justify-center text-lg shrink-0">🥇</div>';
+            else if (rank === 2) medalHtml = '<div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-lg shrink-0">🥈</div>';
+            else if (rank === 3) medalHtml = '<div class="w-8 h-8 rounded-lg bg-orange-100 border border-orange-300 flex items-center justify-center text-lg shrink-0">🥉</div>';
+            else medalHtml = '<div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 shrink-0">' + rank + '</div>';
+
+            var initials = (entry.studentName || 'U').split(' ').map(function(w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+            var avatarHtml = entry.studentPhoto ?
+                '<img src="' + entry.studentPhoto + '" class="w-full h-full object-cover rounded-lg" alt="">' :
+                '<span class="text-[10px] font-black text-slate-500">' + initials + '</span>';
+
+            var rankBg = rank <= 3 ? 'bg-gradient-to-r from-yellow-50/50 to-white border-yellow-200/50' : 'bg-white border-slate-100';
+
+            html += '<div class="flex items-center gap-3 p-3 rounded-xl border ' + rankBg + ' hover:shadow-md transition-all">' +
+                medalHtml +
+                '<div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">' + avatarHtml + '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                    '<div class="flex items-center gap-2 mb-0.5">' +
+                        '<span class="text-sm font-black text-[#0B2447] truncate">' + (entry.studentName || 'Unknown') + '</span>' +
+                        (entry.course ? '<span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-500 shrink-0">' + entry.course + '</span>' : '') +
+                    '</div>' +
+                    '<div class="flex items-center gap-3">' +
+                        '<div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">' +
+                            '<div class="h-full rounded-full ' + barColor + ' transition-all duration-700" style="width:' + perc + '%"></div>' +
+                        '</div>' +
+                        '<span class="text-xs font-black ' + percColor + ' shrink-0">' + (entry.obtained || 0) + '/' + (entry.total || 0) + ' (' + perc + '%)</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        });
+
+        html += '</div>';
+        html += '<div class="mt-4 text-center"><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">' + entries.length + ' student' + (entries.length !== 1 ? 's' : '') + ' ranked</span></div>';
+        leaderboardEl.innerHTML = html;
+
+    } catch(err) {
+        console.error('Error loading leaderboard:', err);
+        leaderboardEl.innerHTML = '<div class="text-xs text-red-600 font-bold p-4 bg-red-50 rounded-xl border border-red-200">Failed to load: ' + err.message + '</div>';
+    }
+};
+
+window.filterScoreboardClass = function(cls) {
+    scoreboardActiveClass = cls;
+    if (scoreboardActiveTest) {
+        window.loadAdminLeaderboard(scoreboardActiveTest);
+    }
+};
+
+// Helper to re-render just test buttons (without full reload)
+async function loadScoreboardTestButtons() {
+    var testListEl = document.getElementById('scoreboardTestList');
+    if (!testListEl) return;
+
+    try {
+        var snap = await getDocs(collection(db, 'scoreboard'));
+        var testMap = {};
+        snap.forEach(function(d) {
+            var data = d.data();
+            var name = data.testName || 'Untitled';
+            if (!testMap[name]) { testMap[name] = { count: 0, date: data.date || '' }; }
+            testMap[name].count++;
+        });
+
+        var names = Object.keys(testMap).sort();
+        var html = '';
+        names.forEach(function(name) {
+            var info = testMap[name];
+            var isActive = name === scoreboardActiveTest;
+            html += '<button onclick="window.loadAdminLeaderboard(\'' + name.replace(/'/g, "\\'") + '\')" ' +
+                'class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border-2 transition-all ' +
+                (isActive ? 'bg-[#0B2447] text-white border-[#0B2447] shadow-lg' : 'bg-white text-[#0B2447] border-slate-100 hover:border-blue-300 hover:bg-blue-50') + '">' +
+                '<div class="text-left">' +
+                    '<div class="text-sm font-black uppercase tracking-wide">' + name + '</div>' +
+                    '<div class="text-[10px] font-bold ' + (isActive ? 'text-blue-200' : 'text-slate-400') + ' uppercase tracking-widest mt-0.5">' + info.count + ' entries · ' + (info.date || 'N/A') + '</div>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                    '<span class="text-[9px] font-black px-2 py-1 rounded-lg ' + (isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500') + '">' + info.count + '</span>' +
+                    '<svg class="w-4 h-4 ' + (isActive ? 'text-white' : 'text-slate-300') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>' +
+                '</div>' +
+            '</button>';
+        });
+
+        testListEl.innerHTML = html;
+    } catch(err) {
+        // Silent fail for button re-render
+    }
+}

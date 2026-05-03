@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreboard & Leaderboard | VT Academy (VT Academe) — Best Coaching Patna</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="View live test scoreboard and leaderboard rankings at VT Academe (VT Academy) — Patna's best coaching at Phulwari Sharif. See how students perform in NEET, JEE, Board exam tests.">
+    <meta name="keywords"
+        content="VT Academe scoreboard, VT Academy leaderboard, VT Academy results, coaching test results Patna, NEET JEE scoreboard, VT Academy Patna rankings, student results, vtacademy scoreboard">
+    <meta name="robots" content="index, follow">
+    <meta name="geo.region" content="IN-BR">
+    <meta name="geo.placename" content="Phulwari Khagaul Road, Phulwari Sharif, Patna, Bihar 801505">
+    <link rel="canonical" href="https://vtacademe.com/scoreboard.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vtacademe.com/scoreboard.html">
+    <meta property="og:site_name" content="VT Academe">
+    <meta property="og:title" content="Scoreboard & Leaderboard | VT Academy (VT Academe) — Best Coaching in Patna">
+    <meta property="og:description" content="Live test rankings and scoreboard at VT Academe (VT Academy) — Patna's premier coaching institute.">
+    <meta property="og:image" content="https://vtacademe.com/logo-with-text.png">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Scoreboard & Leaderboard | VT Academy (VT Academe) Patna">
+    <meta property="twitter:description" content="View live student rankings and test scores at VT Academe (VT Academy) Patna.">
+    <meta property="twitter:image" content="https://vtacademe.com/logo-with-text.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon-512x512.png">
+    <link rel="shortcut icon" href="favicon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#0B2447">
+
+    <!-- JSON-LD: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vtacademe.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Scoreboard", "item": "https://vtacademe.com/scoreboard.html" }
+      ]
+    }
+    </script>
+
+    <!-- CSS & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #f5ede0;
+            --sage: #546877;
+            --beige: #ffffff;
+            --gold: #ff771c;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--primary);
+            color: #161311;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'DM Serif Display', serif;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 40px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        
+        .light-noise-bg {
+            background: #f5ede0;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .light-noise-bg::before {
+            content: "";
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(255, 119, 28, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(100px);
+        }
+
+        .light-noise-bg::after {
+            content: "";
+            position: absolute;
+            bottom: -20%;
+            right: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(84, 104, 119, 0.15) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(120px);
+        }
+
+        .medal-glow-gold { box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); }
+        .medal-glow-silver { box-shadow: 0 0 20px rgba(148, 163, 184, 0.3); }
+        .medal-glow-bronze { box-shadow: 0 0 20px rgba(234, 88, 12, 0.2); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leaderboard-entry {
+            animation: slideIn 0.4s ease-out both;
+        }
+    </style>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
+            authDomain: "vt-academy-37e0e.firebaseapp.com",
+            projectId: "vt-academy-37e0e",
+            storageBucket: "vt-academy-37e0e.firebasestorage.app",
+            messagingSenderId: "498511573525",
+            appId: "1:498511573525:web:4e41cd8322a1c813f2941c",
+            measurementId: "G-8KZ5F4JBGE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let activeTest = null;
+        let activeClass = 'all';
+        let allEntries = [];
+
+        async function loadScoreboard() {
+            const testBar = document.getElementById('test-filter-bar');
+            const loader = document.getElementById('scoreboard-loader');
+            const container = document.getElementById('scoreboard-container');
+            const emptyState = document.getElementById('scoreboard-empty');
+
+            try {
+                const snap = await getDocs(collection(db, 'scoreboard'));
+                const testMap = {};
+
+                snap.forEach((doc) => {
+                    const data = doc.data();
+                    allEntries.push({ id: doc.id, ...data });
+                    const name = data.testName || 'Untitled';
+                    if (!testMap[name]) {
+                        testMap[name] = { count: 0, date: data.date || '' };
+                    }
+                    testMap[name].count++;
+                });
+
+                loader.classList.add('hidden');
+
+                const testNames = Object.keys(testMap).sort();
+
+                if (testNames.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                // Check URL params for pre-selected test
+                const urlParams = new URLSearchParams(window.location.search);
+                const preselected = urlParams.get('test');
+
+                // Render test filter pills
+                testBar.classList.remove('hidden');
+                let pillsHtml = '';
+                testNames.forEach((name) => {
+                    const info = testMap[name];
+                    pillsHtml += `<button onclick="window.selectTest('${name.replace(/'/g, "\\'")}')" 
+                        data-test="${name}"
+                        class="test-pill px-6 py-2.5 rounded-full border border-[#161311]/10 bg-white text-sm font-bold text-[#546877] transition-all duration-500 hover:border-[#ff771c] hover:text-[#ff771c] active:scale-95 shadow-sm whitespace-nowrap">
+                        ${name} <span class="text-[10px] ml-1 opacity-50">(${info.count})</span>
+                    </button>`;
+                });
+                testBar.innerHTML = pillsHtml;
+
+                // Auto-select from URL or first test
+                if (preselected && testNames.includes(preselected)) {
+                    window.selectTest(preselected);
+                } else {
+                    window.selectTest(testNames[0]);
+                }
+
+            } catch (error) {
+                console.error("Error fetching scoreboard:", error);
+                loader.classList.add('hidden');
+                container.innerHTML = `<div class="w-full text-center py-20 text-red-500 font-medium">Failed to load scoreboard. Please try again later.</div>`;
+            }
+        }
+
+        window.selectTest = function(testName) {
+            activeTest = testName;
+            activeClass = 'all';
+
+            // Update pill styles
+            document.querySelectorAll('.test-pill').forEach(btn => {
+                if (btn.dataset.test === testName) {
+                    btn.classList.add('bg-[#ff771c]', 'text-white', 'border-[#ff771c]');
+                    btn.classList.remove('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                } else {
+                    btn.classList.remove('bg-[#ff771c]', 'text-white', 'border-[#ff771c]');
+                    btn.classList.add('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                }
+            });
+
+            renderLeaderboard();
+        };
+
+        window.filterClass = function(cls) {
+            activeClass = cls;
+
+            // Update class pill styles
+            document.querySelectorAll('.class-pill').forEach(btn => {
+                if (btn.dataset.cls === cls) {
+                    btn.classList.add('bg-[#546877]', 'text-white', 'border-[#546877]');
+                    btn.classList.remove('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                } else {
+                    btn.classList.remove('bg-[#546877]', 'text-white', 'border-[#546877]');
+                    btn.classList.add('bg-white', 'text-[#546877]', 'border-[#161311]/10');
+                }
+            });
+
+            renderLeaderboard();
+        };
+
+        function renderLeaderboard() {
+            const container = document.getElementById('scoreboard-container');
+            const titleEl = document.getElementById('active-test-name');
+            
+            if (!activeTest) return;
+            titleEl.textContent = activeTest;
+
+            // Filter entries for this test
+            let entries = allEntries.filter(e => e.testName === activeTest);
+
+            // Get unique classes for class filter
+            const classes = new Set();
+            entries.forEach(e => { if (e.course) classes.add(e.course); });
+
+            // Apply class filter
+            if (activeClass !== 'all') {
+                entries = entries.filter(e => e.course === activeClass);
+            }
+
+            // Sort by percentage descending
+            entries.sort((a, b) => {
+                if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+                return (b.obtained || 0) - (a.obtained || 0);
+            });
+
+            // Build class filter bar
+            let classHtml = '<div id="class-filter-bar" class="flex flex-wrap justify-center gap-2 mb-10">';
+            classHtml += `<button onclick="window.filterClass('all')" data-cls="all" 
+                class="class-pill px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border ${activeClass === 'all' ? 'bg-[#546877] text-white border-[#546877]' : 'bg-white text-[#546877] border-[#161311]/10'} shadow-sm">
+                All Classes</button>`;
+            classes.forEach(cls => {
+                classHtml += `<button onclick="window.filterClass('${cls}')" data-cls="${cls}"
+                    class="class-pill px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border ${activeClass === cls ? 'bg-[#546877] text-white border-[#546877]' : 'bg-white text-[#546877] border-[#161311]/10'} shadow-sm">
+                    ${cls}</button>`;
+            });
+            classHtml += '</div>';
+
+            if (entries.length === 0) {
+                container.innerHTML = classHtml + `<div class="w-full text-center py-16 text-[#546877] font-medium text-lg border border-[#161311]/10 rounded-3xl bg-white shadow-sm">No results for this filter.</div>`;
+                return;
+            }
+
+            let html = classHtml;
+
+            // Top 3 podium for desktop
+            if (entries.length >= 3) {
+                html += `<div class="hidden md:grid grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">`;
+                
+                // Second place (left)
+                const second = entries[1];
+                html += buildPodiumCard(second, 2, 'from-slate-100 to-white', 'border-slate-300', '🥈', 'medal-glow-silver');
+                
+                // First place (center, taller)
+                const first = entries[0];
+                html += `<div class="-mt-4">` + buildPodiumCard(first, 1, 'from-yellow-50 to-white', 'border-yellow-300', '🥇', 'medal-glow-gold') + `</div>`;
+                
+                // Third place (right)
+                const third = entries[2];
+                html += buildPodiumCard(third, 3, 'from-orange-50 to-white', 'border-orange-300', '🥉', 'medal-glow-bronze');
+                
+                html += `</div>`;
+            }
+
+            // Full ranking list
+            html += `<div class="space-y-3 max-w-3xl mx-auto">`;
+            entries.forEach((entry, index) => {
+                const rank = index + 1;
+                const delay = Math.min(index * 0.05, 1);
+                html += buildRankRow(entry, rank, delay);
+            });
+            html += `</div>`;
+
+            html += `<div class="text-center mt-8"><span class="text-xs font-bold text-[#546877]/60 uppercase tracking-widest">${entries.length} student${entries.length !== 1 ? 's' : ''} ranked</span></div>`;
+
+            container.innerHTML = html;
+        }
+
+        function buildPodiumCard(entry, rank, gradient, border, medal, glowClass) {
+            const perc = entry.percentage || 0;
+            const initials = (entry.studentName || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+            const avatarHtml = entry.studentPhoto 
+                ? `<img src="${entry.studentPhoto}" class="w-full h-full object-cover rounded-2xl" alt="">`
+                : `<span class="text-lg font-black text-[#546877]">${initials}</span>`;
+
+            return `
+                <div class="bg-gradient-to-b ${gradient} rounded-3xl border-2 ${border} p-6 text-center shadow-lg ${glowClass} leaderboard-entry">
+                    <div class="text-4xl mb-3">${medal}</div>
+                    <div class="w-16 h-16 rounded-2xl bg-white border-2 ${border} mx-auto mb-4 flex items-center justify-center overflow-hidden shadow-sm">
+                        ${avatarHtml}
+                    </div>
+                    <h3 class="text-lg font-black text-[#161311] mb-1 truncate">${entry.studentName || 'Unknown'}</h3>
+                    ${entry.course ? `<span class="text-[10px] font-bold uppercase tracking-widest text-[#546877] bg-[#546877]/10 px-3 py-1 rounded-full">${entry.course}</span>` : ''}
+                    <div class="mt-4">
+                        <div class="text-3xl font-black text-[#161311]">${perc}<span class="text-lg text-[#546877]">%</span></div>
+                        <div class="text-xs font-bold text-[#546877] mt-1">${entry.obtained || 0} / ${entry.total || 0}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildRankRow(entry, rank, delay) {
+            const perc = entry.percentage || 0;
+            const percColor = perc >= 75 ? 'text-emerald-600' : perc >= 60 ? 'text-blue-600' : perc >= 45 ? 'text-yellow-600' : 'text-red-600';
+            const barColor = perc >= 75 ? 'bg-emerald-500' : perc >= 60 ? 'bg-blue-500' : perc >= 45 ? 'bg-yellow-500' : 'bg-red-500';
+            const bgColor = perc >= 75 ? 'from-emerald-500/5' : perc >= 60 ? 'from-blue-500/5' : perc >= 45 ? 'from-yellow-500/5' : 'from-red-500/5';
+
+            let medalHtml = '';
+            if (rank === 1) medalHtml = `<div class="w-10 h-10 rounded-xl bg-yellow-100 border border-yellow-300 flex items-center justify-center text-xl shrink-0 shadow-sm">🥇</div>`;
+            else if (rank === 2) medalHtml = `<div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-xl shrink-0 shadow-sm">🥈</div>`;
+            else if (rank === 3) medalHtml = `<div class="w-10 h-10 rounded-xl bg-orange-100 border border-orange-300 flex items-center justify-center text-xl shrink-0 shadow-sm">🥉</div>`;
+            else medalHtml = `<div class="w-10 h-10 rounded-xl bg-white border border-[#161311]/10 flex items-center justify-center text-sm font-black text-[#546877] shrink-0">${rank}</div>`;
+
+            const initials = (entry.studentName || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+            const avatarHtml = entry.studentPhoto 
+                ? `<img src="${entry.studentPhoto}" class="w-full h-full object-cover rounded-xl" alt="">`
+                : `<span class="text-[11px] font-black text-[#546877]">${initials}</span>`;
+
+            const rankHighlight = rank <= 3 ? 'border-[#ff771c]/20 shadow-md' : 'border-[#161311]/5';
+
+            return `
+                <div class="leaderboard-entry flex items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-gradient-to-r ${bgColor} to-white rounded-2xl border ${rankHighlight} hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300" style="animation-delay: ${delay}s">
+                    ${medalHtml}
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-[#161311]/10 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                        ${avatarHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm sm:text-base font-bold text-[#161311] truncate">${entry.studentName || 'Unknown'}</span>
+                            ${entry.course ? `<span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-[#546877]/10 text-[#546877] shrink-0 hidden sm:inline">${entry.course}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1 h-2 bg-[#161311]/5 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full ${barColor} transition-all duration-1000" style="width:${perc}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-base sm:text-lg font-black ${percColor}">${perc}%</div>
+                        <div class="text-[10px] font-bold text-[#546877]/60">${entry.obtained || 0}/${entry.total || 0}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadScoreboard);
+    </script>
+</head>
+<body class="antialiased min-h-screen flex flex-col pt-24 relative selection:bg-[#ff771c] selection:text-white">
+
+    <div class="light-noise-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-[#161311]/5 transition-all duration-300 shadow-sm">
+        <div class="mx-auto max-w-[1400px] px-6 lg:px-12">
+            <div class="flex h-20 items-center justify-between">
+                <a href="index.html" class="flex items-center gap-4 group">
+                    <img class="h-12 w-auto object-contain transition-transform group-hover:scale-105" src="logo-with-text.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo">
+                </a>
+                <div class="flex gap-4 items-center">
+                    <a href="student-portal.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-[#546877] hover:text-[#161311] transition-colors px-4 py-2">
+                        Student Portal
+                    </a>
+                    <a href="notes.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-[#546877] hover:text-[#161311] transition-colors px-4 py-2">
+                        Notes
+                    </a>
+                    <a href="index.html" class="flex items-center gap-2 text-sm font-bold text-[#ff771c] hover:text-white transition-colors bg-[#ff771c]/10 hover:bg-[#ff771c] px-4 py-2 rounded-full border border-[#ff771c]/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        
+        <!-- Header Text -->
+        <div class="text-center max-w-4xl mx-auto mb-12 pt-4 animate-[fadeInUp_1s_ease-out_both] select-none">
+            <div class="inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-[#ff771c]/30 bg-white shadow-sm mb-8 transform hover:scale-105 transition-transform duration-300">
+                <span class="text-2xl">🏆</span>
+                <span class="text-[#ff771c] text-xs font-black uppercase tracking-[0.2em] pt-0.5">SCOREBOARD</span>
+            </div>
+
+            <h1 class="text-5xl sm:text-6xl md:text-[5rem] font-black text-[#161311] mb-6 title-font leading-[1.1] tracking-tight">
+                Test <span class="text-transparent bg-clip-text" style="background-image: linear-gradient(to right, #ff771c, #546877);">Leaderboard</span>
+            </h1>
+
+            <p class="text-[#546877] text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+                See how students are performing across tests. Rankings update in real-time after every assessment.
+            </p>
+        </div>
+
+        <!-- Active Test Name -->
+        <div class="text-center mb-4">
+            <span id="active-test-name" class="text-2xl sm:text-3xl font-black text-[#161311] title-font"></span>
+        </div>
+
+        <!-- Test Filter Bar -->
+        <div id="test-filter-bar" class="flex flex-wrap justify-center gap-3 mb-8 hidden animate-[fadeInUp_0.8s_ease-out_both]" style="animation-delay: 0.2s">
+            <!-- Buttons dynamically injected -->
+        </div>
+
+        <!-- Scoreboard Container -->
+        <div class="max-w-[1200px] mx-auto w-full relative z-20">
+            <!-- Loader -->
+            <div id="scoreboard-loader" class="flex flex-col items-center justify-center py-20 animate-pulse">
+                <div class="w-16 h-16 border-4 border-[#ff771c]/30 border-t-[#ff771c] rounded-full animate-spin mb-4"></div>
+                <p class="text-[#ff771c] font-bold tracking-widest uppercase text-sm">Loading Scoreboard...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="scoreboard-empty" class="hidden w-full text-center py-20 border border-[#161311]/10 rounded-3xl bg-white shadow-sm">
+                <div class="text-5xl mb-4">🏆</div>
+                <h3 class="text-2xl font-black text-[#161311] mb-2 title-font">No Scores Yet</h3>
+                <p class="text-[#546877] font-medium text-lg">Check back after assessments are published.</p>
+            </div>
+
+            <!-- Dynamic Content -->
+            <div id="scoreboard-container"></div>
+        </div>
+        
+    </main>
+
+</body>
+</html>
