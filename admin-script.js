@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -11,9 +11,11 @@ const firebaseConfig = {
     measurementId: "G-8KZ5F4JBGE"
 };
 
-// Initialize Firebase
+// Initialize Firebase with persistent local cache
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 // Global State
 let studentsList = [];
@@ -69,31 +71,38 @@ function showAlert(msg, color) {
 }
 
 // Fetch Students
-function fetchStudents() {
-    try {
-        // Use onSnapshot for real-time updates and to fix empty initial loads
-        onSnapshot(collection(db, "students"), (querySnapshot) => {
-            studentsList = [];
-            querySnapshot.forEach((doc) => {
-                studentsList.push({ id: doc.id, ...doc.data() });
-            });
+async function fetchStudents(attempt = 1) {
+    // Show loading spinner immediately
+    if (studentCardGrid) {
+        studentCardGrid.innerHTML = '<div class="col-span-full py-16 text-center"><div class="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div><p class="mt-4 text-slate-400 text-sm font-medium">Loading students...</p></div>';
+    }
 
-            // Sort locally by name
-            studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            
-            renderStudents(studentsList);
-            updateDashboardStats(studentsList);
-        }, (error) => {
-            console.error("Error fetching students:", error);
-            if (studentCardGrid) {
-                studentCardGrid.innerHTML = `<div class="col-span-full py-12 text-center text-red-500 font-bold">Failed to load: ${error.message}</div>`;
-            }
+    try {
+        const querySnapshot = await getDocs(collection(db, "students"));
+        studentsList = [];
+        querySnapshot.forEach((docSnap) => {
+            studentsList.push({ id: docSnap.id, ...docSnap.data() });
         });
+
+        // Sort locally by name
+        studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         
+        renderStudents(studentsList);
+        updateDashboardStats(studentsList);
     } catch (error) {
-        console.error("Error setting up students listener:", error);
+        console.error("Error fetching students (attempt " + attempt + "):", error);
+        if (attempt < 3) {
+            // Retry after 1 second
+            setTimeout(() => fetchStudents(attempt + 1), 1000);
+        } else {
+            if (studentCardGrid) {
+                studentCardGrid.innerHTML = `<div class="col-span-full py-12 text-center text-red-500 font-bold">Failed to load: ${error.message}<br><button onclick="window.retryFetch()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Retry</button></div>`;
+            }
+        }
     }
 }
+
+window.retryFetch = () => fetchStudents(1);
 
 // Render Students Cards
 function renderStudents(data) {

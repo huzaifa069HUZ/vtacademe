@@ -1183,24 +1183,6 @@
         </div>
     </section>
 
-    <!-- Include Mobile Nav Script -->
-    <script>
-        function openMobileMenu() {
-            document.getElementById('mobile-menu-overlay').style.opacity = '1';
-            document.getElementById('mobile-menu-overlay').style.pointerEvents = 'auto';
-            document.getElementById('mobile-menu-drawer').style.transform = 'translateX(0)';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMobileMenu() {
-            document.getElementById('mobile-menu-overlay').style.opacity = '0';
-            document.getElementById('mobile-menu-overlay').style.pointerEvents = 'none';
-            document.getElementById('mobile-menu-drawer').style.transform = 'translateX(100%)';
-            document.body.style.overflow = '';
-        }
-
-        document.getElementById('mobile-menu-button')?.addEventListener('click', openMobileMenu);
-    </script>
 
 <!-- Footer -->
     <footer class="bg-[#0B2447] text-white pt-16 pb-12 px-8 lg:px-16">
