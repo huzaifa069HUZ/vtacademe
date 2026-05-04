@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -69,27 +69,29 @@ function showAlert(msg, color) {
 }
 
 // Fetch Students
-async function fetchStudents() {
+function fetchStudents() {
     try {
-        // Use plain collection fetch — no orderBy to avoid index errors
-        const querySnapshot = await getDocs(collection(db, "students"));
-        
-        studentsList = [];
-        querySnapshot.forEach((doc) => {
-            studentsList.push({ id: doc.id, ...doc.data() });
-        });
+        // Use onSnapshot for real-time updates and to fix empty initial loads
+        onSnapshot(collection(db, "students"), (querySnapshot) => {
+            studentsList = [];
+            querySnapshot.forEach((doc) => {
+                studentsList.push({ id: doc.id, ...doc.data() });
+            });
 
-        // Sort locally by name
-        studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-        
-        renderStudents(studentsList);
-        updateDashboardStats(studentsList);
+            // Sort locally by name
+            studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            
+            renderStudents(studentsList);
+            updateDashboardStats(studentsList);
+        }, (error) => {
+            console.error("Error fetching students:", error);
+            if (studentCardGrid) {
+                studentCardGrid.innerHTML = `<div class="col-span-full py-12 text-center text-red-500 font-bold">Failed to load: ${error.message}</div>`;
+            }
+        });
         
     } catch (error) {
-        console.error("Error fetching students:", error);
-        if (studentCardGrid) {
-            studentCardGrid.innerHTML = `<div class="col-span-full py-12 text-center text-red-500 font-bold">Failed to load: ${error.message}</div>`;
-        }
+        console.error("Error setting up students listener:", error);
     }
 }
 

@@ -939,7 +939,8 @@
     </div>
 
     <!-- Header -->
-    <h1 class="sr-only">VT Academe (VT Academy) Patna — Best Coaching Institute for NEET, JEE, Foundation & Board Exams in Phulwari Sharif, Bihar</h1>
+    <h1 class="sr-only">VT Academe (VT Academy) Patna — Best Coaching Institute for NEET, JEE, Foundation & Board Exams
+        in Phulwari Sharif, Bihar</h1>
     <header id="header"
         class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-full z-50 py-3 lg:py-5 px-4 md:px-8 lg:px-10 xl:px-14 flex items-center justify-between transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-transparent overflow-hidden">
 
@@ -967,12 +968,7 @@
                     <span
                         class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F97316] transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="ambition-values.html"
-                    class="nav-link relative py-2 text-white hover:text-[#F97316] transition-colors duration-300 group">
-                    Ambition &amp; Values
-                    <span
-                        class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F97316] transition-all duration-300 group-hover:w-full"></span>
-                </a>
+
                 <a href="gallery.html"
                     class="nav-link relative py-2 text-white hover:text-[#F97316] transition-colors duration-300 group">
                     Gallery
@@ -2356,7 +2352,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
                 <div
-                    class="group bg-slate-900 rounded-lg shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#F97316]/20 transition-all duration-300 border border-transparent hover:border-[#F97316]/30">
+                    class="group bg-slate-900 rounded-lg shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#F97316]/20 transition-all duration-300 border border-transparent hover:border-[#F97316]/30 hidden md:block">
                     <div class="overflow-hidden h-64">
                         <img src="assets/activity.jfif" alt="Activity"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -2428,7 +2424,7 @@
                 </div>
 
                 <div
-                    class="group bg-slate-900 rounded-lg shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#F97316]/20 transition-all duration-300 border border-transparent hover:border-[#F97316]/30">
+                    class="group bg-slate-900 rounded-lg shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#F97316]/20 transition-all duration-300 border border-transparent hover:border-[#F97316]/30 hidden md:block">
                     <div class="overflow-hidden h-64">
                         <img src="assets/extracurricular.jfif" alt="Extracurricular"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -3994,7 +3990,7 @@
                 <div class="hidden md:flex col-span-1 md:col-span-1 lg:col-span-3 flex-col gap-6 reveal-left">
                     <div
                         class="relative rounded-2xl overflow-hidden shadow-2xl group rotate-1 hover:rotate-0 transition-transform duration-500">
-                        <img src="assets/happy girl.jpeg" alt="Happy Student on Swing"
+                        <img src="smile class.jfif" alt="Happy Student on Swing"
                             class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-700">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#0B2447]/80 to-transparent"></div>
                         <div class="absolute bottom-6 left-6 right-6">
@@ -4007,13 +4003,31 @@
                 </div>
 
                 <!-- Right: Map (Extreme Right) -->
-                <div class="col-span-1 md:col-span-1 lg:col-span-2 w-full h-full min-h-[400px] reveal-right">
+                <div
+                    class="col-span-1 md:col-span-1 lg:col-span-2 w-full h-full min-h-[400px] reveal-right flex flex-col gap-3">
+                    <div class="flex justify-center lg:justify-end gap-2 relative z-10">
+                        <button
+                            onclick="document.getElementById('branch-map-1').classList.remove('hidden'); document.getElementById('branch-map-2').classList.add('hidden'); this.classList.add('bg-[#F97316]', 'text-white', 'border-[#F97316]'); this.classList.remove('bg-white', 'text-slate-600', 'border-slate-200'); document.getElementById('btn-map-2').classList.remove('bg-[#F97316]', 'text-white', 'border-[#F97316]'); document.getElementById('btn-map-2').classList.add('bg-white', 'text-slate-600', 'border-slate-200');"
+                            id="btn-map-1"
+                            class="px-4 py-1.5 text-xs font-bold rounded-full transition-all border bg-[#F97316] text-white border-[#F97316] shadow-sm">Branch
+                            1</button>
+                        <button
+                            onclick="document.getElementById('branch-map-2').classList.remove('hidden'); document.getElementById('branch-map-1').classList.add('hidden'); this.classList.add('bg-[#F97316]', 'text-white', 'border-[#F97316]'); this.classList.remove('bg-white', 'text-slate-600', 'border-slate-200'); document.getElementById('btn-map-1').classList.remove('bg-[#F97316]', 'text-white', 'border-[#F97316]'); document.getElementById('btn-map-1').classList.add('bg-white', 'text-slate-600', 'border-slate-200');"
+                            id="btn-map-2"
+                            class="px-4 py-1.5 text-xs font-bold rounded-full transition-all border bg-white text-slate-600 border-slate-200 shadow-sm">Branch
+                            2</button>
+                    </div>
                     <div
-                        class="relative rounded-2xl overflow-hidden shadow-xl border-4 border-[#F97316]/20 h-full group hover:border-[#F97316] transition-colors duration-300">
-                        <iframe
+                        class="relative rounded-2xl overflow-hidden shadow-xl border-4 border-[#F97316]/20 flex-1 min-h-[350px] group hover:border-[#F97316] transition-colors duration-300">
+                        <iframe id="branch-map-1"
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3598.787910540742!2d85.07679329999999!3d25.578722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f2a99d81740f29%3A0xbe82207379664e3b!2sVTacademe%20Coaching%20Classes!5e0!3m2!1sen!2sin!4v1776626377688!5m2!1sen!2sin"
                             class="w-full h-full absolute inset-0" style="border:0;" allowfullscreen="" loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                        <iframe id="branch-map-2"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3598.8394075597566!2d85.06823729999999!3d25.577009099999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f2a9aeb86063fb%3A0xc0ac33765ba15814!2sVTacademe!5e0!3m2!1sen!2sin!4v1777921826860!5m2!1sen!2sin"
+                            class="w-full h-full absolute inset-0 hidden" style="border:0;" allowfullscreen=""
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
                         </iframe>
                     </div>
                 </div>
@@ -4043,26 +4057,7 @@
     </section>
 
     <!-- ===== SEO CONTENT BLOCK — Crawlable Brand-Keyword Text ===== -->
-    <section class="bg-white py-16 px-6 lg:px-16 border-t border-gray-100" id="about-vt-academy">
-        <div class="container mx-auto max-w-5xl">
-            <div class="text-center mb-10">
-                <span class="text-[#F97316] uppercase tracking-[0.4em] text-[10px] font-bold block mb-3">About Us</span>
-                <h2 class="text-3xl md:text-4xl font-black text-[#0B2447]" style="font-family:'DM Serif Display',serif;">Welcome to VT Academe — <span class="text-[#F97316] italic font-light">Best Coaching in Patna</span></h2>
-            </div>
-            <article class="text-[#0B2447]/80 text-sm md:text-base leading-relaxed space-y-5 max-w-4xl mx-auto">
-                <p><strong>VT Academe</strong> (also widely known as <strong>VT Academy</strong>) is a premier coaching institute located at <strong>Phulwari Sharif, Patna, Bihar</strong>. Whether you search for <em>VT Academy Patna</em>, <em>VT Academe</em>, <em>VTAcademy</em>, or simply <em>VT Academy</em> — you've found the right place. We are Patna's most trusted destination for <strong>NEET coaching</strong>, <strong>IIT-JEE (Main &amp; Advanced) preparation</strong>, <strong>Foundation courses for Class 7–10</strong>, and <strong>Board exam coaching for Class 11 &amp; 12</strong> (CBSE &amp; Bihar Board).</p>
-                <p>Founded with the vision of providing world-class education in Patna, <strong>VT Academe Coaching Classes</strong> has grown into the region's leading institute with <strong>500+ successful selections</strong> in competitive exams. Our campus at <strong>Phulwari Khagaul Road, Patna 801505</strong> features modern classrooms, a digital learning lab, and a focused academic environment designed for excellence.</p>
-                <p>What sets <strong>VT Academy Patna</strong> apart is our commitment to <em>small batch sizes</em>, <em>experienced faculty with 10+ years of teaching expertise</em>, <em>weekly tests with detailed performance analysis</em>, and <em>personalized mentorship</em> for every student. We don't just teach — we build top rankers.</p>
-                <p>Our expert faculty specializes in <strong>Physics, Chemistry, Mathematics, and Biology</strong> — covering the complete syllabus for NEET-UG, JEE Main, JEE Advanced, CBSE Board, and Bihar Board examinations. Students from across Patna, Phulwari Sharif, Danapur, Khagaul, and surrounding areas trust VT Academe for their academic success.</p>
-                <div class="flex flex-wrap gap-3 pt-4">
-                    <a href="admission.html" class="inline-flex items-center gap-2 bg-[#0B2447] text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-[#F97316] transition-colors">Apply for Admission →</a>
-                    <a href="gallery.html" class="inline-flex items-center gap-2 border border-[#0B2447]/20 text-[#0B2447] px-5 py-2.5 rounded-lg text-sm font-bold hover:border-[#F97316] hover:text-[#F97316] transition-colors">Explore Our Campus</a>
-                    <a href="notes.html" class="inline-flex items-center gap-2 border border-[#0B2447]/20 text-[#0B2447] px-5 py-2.5 rounded-lg text-sm font-bold hover:border-[#F97316] hover:text-[#F97316] transition-colors">Free Study Notes</a>
-                    <a href="student-portal.html" class="inline-flex items-center gap-2 border border-[#0B2447]/20 text-[#0B2447] px-5 py-2.5 rounded-lg text-sm font-bold hover:border-[#F97316] hover:text-[#F97316] transition-colors">Student Portal</a>
-                </div>
-            </article>
-        </div>
-    </section>
+    <!-- Moved to about.html -->
 
     <!-- Footer -->
     <footer class="bg-[#0B2447] text-white pt-16 pb-12 px-8 lg:px-16">
@@ -4072,7 +4067,8 @@
                     <!-- Logo and ACADEMY Name -->
                     <div class="flex items-center gap-4 mb-6">
                         <div class="inline-block bg-white rounded-2xl p-2 shadow-lg">
-                            <img src="logo.jpeg" alt="VT Academe (VT Academy) Coaching Institute Patna Logo" class="h-20 w-auto rounded-xl">
+                            <img src="logo.jpeg" alt="VT Academe (VT Academy) Coaching Institute Patna Logo"
+                                class="h-20 w-auto rounded-xl">
                         </div>
                         <div class="flex flex-col">
                             <span class="text-3xl title-font tracking-[0.05em] text-white font-bold leading-none">
@@ -4084,8 +4080,10 @@
                         </div>
                     </div>
                     <p class="text-gray-400 text-sm font-light max-w-sm leading-relaxed mb-8">
-                        VT Academe (VT Academy) is Patna's premier coaching institute for NEET, JEE, Foundation &amp; Board exams. We combine expert
-                        faculty, rigorous practice, and personalized mentorship at Phulwari Sharif, Patna to help students reach their dream
+                        VT Academe (VT Academy) is Patna's premier coaching institute for NEET, JEE, Foundation &amp;
+                        Board exams. We combine expert
+                        faculty, rigorous practice, and personalized mentorship at Phulwari Sharif, Patna to help
+                        students reach their dream
                         medical or engineering college.
                     </p>
                     <div class="flex space-x-4">
@@ -4116,17 +4114,23 @@
                     <h4 class="text-[10px] uppercase tracking-[0.4em] font-bold text-[#F97316] mb-8">Navigation</h4>
                     <ul class="space-y-4 text-[12px] font-light text-gray-400 tracking-wider">
                         <li><a href="#about-vt-academy"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">About VT Academy</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">About
+                                VT Academy</a></li>
                         <li><a href="admission.html"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Admission — Enroll Now</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Admission
+                                — Enroll Now</a></li>
                         <li><a href="gallery.html"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Campus Gallery</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Campus
+                                Gallery</a></li>
                         <li><a href="notes.html"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Free Study Notes</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Free
+                                Study Notes</a></li>
                         <li><a href="scoreboard.html"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Scoreboard</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Scoreboard</a>
+                        </li>
                         <li><a href="student-portal.html"
-                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Student Portal</a></li>
+                                class="hover:text-[#F97316] hover:translate-x-1 inline-block transition-all duration-300">Student
+                                Portal</a></li>
                     </ul>
                 </div>
                 <div>
@@ -4344,7 +4348,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.showToast = function(type, message) {
+        window.showToast = function (type, message) {
             const existing = document.getElementById('mcs-toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
@@ -4367,7 +4371,7 @@
             setTimeout(() => { toast.style.transform = 'translateY(20px)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4500);
         };
 
-        window.submitInquiryForm = async function(e) {
+        window.submitInquiryForm = async function (e) {
             e.preventDefault();
             const btn = document.getElementById('inq-submit-btn');
             const btnText = document.getElementById('inq-submit-text');
@@ -4418,7 +4422,7 @@
             }
         };
 
-        window.submitPopupForm = async function(e) {
+        window.submitPopupForm = async function (e) {
             e.preventDefault();
             const btn = document.getElementById('popup-submit-btn');
             const btnText = document.getElementById('popup-submit-text');
