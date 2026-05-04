@@ -304,6 +304,20 @@
                 html += buildPodiumCard(third, 3, 'from-orange-50 to-white', 'border-orange-300', '🥉', 'medal-glow-bronze');
                 
                 html += `</div>`;
+
+                // Top 3 podium for mobile (stacked: 1st biggest, 2nd medium, 3rd smaller)
+                html += `<div class="md:hidden flex flex-col items-center gap-4 mb-10 px-2">`;
+                
+                // 1st place - full width, large
+                html += `<div class="w-full max-w-sm">` + buildPodiumCard(entries[0], 1, 'from-yellow-50 to-white', 'border-yellow-300', '🥇', 'medal-glow-gold') + `</div>`;
+                
+                // 2nd place - slightly narrower
+                html += `<div class="w-[88%] max-w-xs">` + buildPodiumCard(entries[1], 2, 'from-slate-100 to-white', 'border-slate-300', '🥈', 'medal-glow-silver') + `</div>`;
+                
+                // 3rd place - even narrower
+                html += `<div class="w-[76%] max-w-[280px]">` + buildPodiumCard(entries[2], 3, 'from-orange-50 to-white', 'border-orange-300', '🥉', 'medal-glow-bronze') + `</div>`;
+                
+                html += `</div>`;
             }
 
             // Full ranking list

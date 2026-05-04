@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, getDocsFromCache, getDocsFromServer, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -11,10 +11,13 @@ const firebaseConfig = {
     measurementId: "G-8KZ5F4JBGE"
 };
 
-// Initialize Firebase with persistent local cache
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+const db = getFirestore(app);
+
+// Enable offline persistence (cache data in IndexedDB)
+enableIndexedDbPersistence(db).catch((err) => {
+    console.warn("Persistence failed:", err.code);
 });
 
 // Global State
@@ -70,39 +73,62 @@ function showAlert(msg, color) {
     loginAlert.textContent = msg;
 }
 
-// Fetch Students
-async function fetchStudents(attempt = 1) {
-    // Show loading spinner immediately
+// Fetch Students — tries cache first for instant load, then syncs from server
+async function fetchStudents() {
+    // Show loading spinner
     if (studentCardGrid) {
         studentCardGrid.innerHTML = '<div class="col-span-full py-16 text-center"><div class="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div><p class="mt-4 text-slate-400 text-sm font-medium">Loading students...</p></div>';
     }
 
-    try {
-        const querySnapshot = await getDocs(collection(db, "students"));
-        studentsList = [];
-        querySnapshot.forEach((docSnap) => {
-            studentsList.push({ id: docSnap.id, ...docSnap.data() });
-        });
+    const studentsRef = collection(db, "students");
+    let loadedFromCache = false;
 
-        // Sort locally by name
+    // Step 1: Try loading from cache first (instant)
+    try {
+        const cacheSnapshot = await getDocsFromCache(studentsRef);
+        if (!cacheSnapshot.empty) {
+            studentsList = [];
+            cacheSnapshot.forEach((d) => studentsList.push({ id: d.id, ...d.data() }));
+            studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            renderStudents(studentsList);
+            updateDashboardStats(studentsList);
+            loadedFromCache = true;
+        }
+    } catch (e) {
+        // No cache available, that's fine
+    }
+
+    // Step 2: Always fetch from server to get latest data
+    try {
+        const serverSnapshot = await getDocsFromServer(studentsRef);
+        studentsList = [];
+        serverSnapshot.forEach((d) => studentsList.push({ id: d.id, ...d.data() }));
         studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-        
         renderStudents(studentsList);
         updateDashboardStats(studentsList);
     } catch (error) {
-        console.error("Error fetching students (attempt " + attempt + "):", error);
-        if (attempt < 3) {
-            // Retry after 1 second
-            setTimeout(() => fetchStudents(attempt + 1), 1000);
-        } else {
-            if (studentCardGrid) {
-                studentCardGrid.innerHTML = `<div class="col-span-full py-12 text-center text-red-500 font-bold">Failed to load: ${error.message}<br><button onclick="window.retryFetch()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Retry</button></div>`;
+        console.error("Server fetch failed:", error);
+        // If we already loaded from cache, that's okay — user sees cached data
+        if (!loadedFromCache) {
+            // Last resort: try default getDocs (uses cache if available)
+            try {
+                const fallbackSnapshot = await getDocs(studentsRef);
+                studentsList = [];
+                fallbackSnapshot.forEach((d) => studentsList.push({ id: d.id, ...d.data() }));
+                studentsList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                renderStudents(studentsList);
+                updateDashboardStats(studentsList);
+            } catch (err2) {
+                console.error("All fetch methods failed:", err2);
+                if (studentCardGrid) {
+                    studentCardGrid.innerHTML = '<div class="col-span-full py-12 text-center text-red-500 font-bold">Could not load students. Check your internet connection.<br><button onclick="window.retryFetch()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Retry</button></div>';
+                }
             }
         }
     }
 }
 
-window.retryFetch = () => fetchStudents(1);
+window.retryFetch = () => fetchStudents();
 
 // Render Students Cards
 function renderStudents(data) {
