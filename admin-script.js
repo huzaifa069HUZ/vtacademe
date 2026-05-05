@@ -219,9 +219,9 @@ function renderFeeOverview(data) {
 
     // === HARDCODED FIXED TABS ===
     var FIXED_TABS = [
-        { key: 'all',      label: 'All Students' },
-        { key: 'Class 11', label: 'Class 11' },
-        { key: 'Class 12', label: 'Class 12' }
+        { key: 'all',      label: 'Total Collection' },
+        { key: 'Phulwari Block', label: 'Phulwari Block' },
+        { key: 'Phulwari Golambar', label: 'Phulwari Golambar' }
     ];
 
     var activeFilter = overviewEl.dataset.activeFilter || 'all';
@@ -229,7 +229,7 @@ function renderFeeOverview(data) {
     // Filter students for active tab
     var filtered = activeFilter === 'all'
         ? data
-        : data.filter(function(s) { return (s.course || '').trim() === activeFilter; });
+        : data.filter(function(s) { return (s.branch || '').trim() === activeFilter; });
 
     // Compute totals for active tab
     var totalExpected = 0, totalPaid = 0, totalDue = 0;
@@ -252,8 +252,8 @@ function renderFeeOverview(data) {
     var subjectStudentCount = {};
     SUBJECTS.forEach(function(sub) { subjectTotals[sub] = 0; subjectStudentCount[sub] = 0; });
 
-    // Use ALL data (not just active tab filter) for subject totals so it's always global
-    data.forEach(function(s) {
+    // Use filtered data for subject totals to reflect the active tab
+    filtered.forEach(function(s) {
         var rawStd = s.std || '';
         var subs = rawStd.split(',').map(function(x){ return x.trim(); }).filter(function(x){
             return x && knownClasses.indexOf(x.toLowerCase()) === -1;
@@ -274,7 +274,7 @@ function renderFeeOverview(data) {
         var isActive = activeFilter === tab.key;
         var count = tab.key === 'all'
             ? data.length
-            : data.filter(function(s){ return (s.course||'').trim() === tab.key; }).length;
+            : data.filter(function(s){ return (s.branch||'').trim() === tab.key; }).length;
         return '<button onclick="window.setFeeOverviewFilter(\'' + tab.key + '\')" ' +
             'class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ' +
             (isActive ? 'bg-[#0B2447] text-white border-[#0B2447] shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600') + '">' +
@@ -487,6 +487,8 @@ document.getElementById('addStudentForm').addEventListener('submit', async (e) =
             board: document.getElementById("admin_board").value,
             course: document.getElementById("admin_course").value,
             std: document.getElementById("admin_class").value,
+            branch: document.getElementById("admin_branch").value,
+            address: document.getElementById("admin_address").value,
             photoBase64: document.getElementById('admin_photoBase64').value || ""
         };
 
@@ -494,7 +496,6 @@ document.getElementById('addStudentForm').addEventListener('submit', async (e) =
         if (editId) {
             await updateDoc(doc(db, "students", editId), studentData);
         } else {
-            studentData.address = ""; 
             studentData.feesTotal = 0;
             studentData.feesPaid = 0;
             studentData.createdAt = serverTimestamp();
@@ -533,6 +534,8 @@ window.editStudent = (id) => {
     if (document.getElementById("admin_bloodGroup")) document.getElementById("admin_bloodGroup").value = s.bloodGroup || "";
     document.getElementById("admin_board").value = s.board || "CBSE";
     document.getElementById("admin_course").value = s.course || "Class 11";
+    document.getElementById("admin_branch").value = s.branch || "Phulwari Block";
+    document.getElementById("admin_address").value = s.address || "";
     
     const stdInput = document.getElementById("admin_class");
     stdInput.value = s.std || "";

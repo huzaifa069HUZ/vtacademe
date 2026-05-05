@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     board: document.getElementById("board").value,
                     std: document.getElementById("std").value,
                     course: document.getElementById("course").value,
+                    branch: document.getElementById("branch").value,
                     address: document.getElementById("address").value,
                     photoBase64: document.getElementById("photoBase64").value,
                     source: "admission",
