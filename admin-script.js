@@ -1238,22 +1238,37 @@ if (uploadNoteForm) {
         const file = fileInput.files[0];
         if (!file) return;
 
-        if (file.size > 1048576) {
+        if (file.size > 26214400) { // 25 MB
             errorMsg.classList.remove('hidden');
             return;
         }
         errorMsg.classList.add('hidden');
 
         btn.disabled = true;
-        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent"></i> Uploading...`;
+        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading to Cloudinary...`;
 
         try {
-            const base64Data = await getBase64(file);
+            const cloudName = "dc77zv3qa";
+            const uploadPreset = "vt_academy_notes";
             
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error?.message || "Cloudinary upload failed");
+            }
+
             await addDoc(collection(db, "notes"), {
                 title: title,
                 class: noteClass,
-                base64: base64Data,
+                fileUrl: data.secure_url,
                 createdAt: serverTimestamp()
             });
 

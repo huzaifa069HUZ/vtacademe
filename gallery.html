@@ -278,7 +278,7 @@
         class="fixed w-full z-50 py-3 md:py-6 px-4 md:px-8 lg:px-12 flex justify-between items-center gap-4 xl:gap-8 transition-all duration-500 border-b border-transparent">
         <a href="index.html" class="flex items-center gap-2 md:gap-4 group cursor-pointer">
             <img src="logo-with-text.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo"
-                class="h-10 md:h-14 lg:h-16 w-auto object-contain drop-shadow-lg group-hover:scale-105 transition-transform duration-300">
+                class="h-10 md:h-14 lg:h-16 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] group-hover:scale-105 transition-transform duration-300">
         </a>
 
         <!-- Desktop Navigation -->
@@ -373,21 +373,18 @@
                 <a href="index.html"
                     class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Home</a>
                 <a href="about.html"
-                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">About
-                    Us</a>
-                <a href="academics.html"
-                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Academics</a>
-                <a href="faith-values.html"
-                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Faith
-                    & Values</a>
+                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">About Us</a>
+                <a href="COURSES.html"
+                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">COURSES</a>
                 <a href="gallery.html"
                     class="mobile-nav-link text-2xl text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Gallery</a>
                 <a href="student-portal.html"
-                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Student
-                    Portal</a>
+                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Students Portal</a>
+                <a href="notes.html"
+                    class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Notes</a>
                 <a href="scoreboard.html"
                     class="mobile-nav-link text-2xl text-white hover:text-[#F97316] transition-colors duration-300 uppercase tracking-widest">Scoreboard</a>
-                <a href="admissions.html"
+                <a href="admission.html"
                     class="px-8 py-3 bg-gradient-to-r from-[#F97316] to-[#FB923C] text-white text-sm uppercase tracking-[0.2em] font-bold rounded-full hover:shadow-2xl transition-all duration-300 mt-8">
                     Admission Now
                 </a>
@@ -1014,14 +1011,14 @@
         const headerTitle = header.querySelector('.logo-text');
         const navLinks = header.querySelectorAll('.nav-link');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileSidebar = document.getElementById('mobile-menu');
         const menuBackdrop = document.getElementById('menu-backdrop');
         const mobileMenuClose = document.getElementById('mobile-menu-close');
-        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const sidebarLinks = document.querySelectorAll('.mobile-nav-link');
 
         function openSidebar() {
             if (!mobileSidebar) return;
-            mobileSidebar.style.transform = 'translateX(0)';
+            mobileSidebar.classList.remove('translate-x-full');
             if (menuBackdrop) { menuBackdrop.style.opacity = '1'; menuBackdrop.style.pointerEvents = 'auto'; }
             document.body.style.overflow = 'hidden';
             sidebarLinks.forEach((link, i) => {
@@ -1037,7 +1034,7 @@
 
         function closeSidebar() {
             if (!mobileSidebar) return;
-            mobileSidebar.style.transform = 'translateX(100%)';
+            mobileSidebar.classList.add('translate-x-full');
             if (menuBackdrop) { menuBackdrop.style.opacity = '0'; menuBackdrop.style.pointerEvents = 'none'; }
             document.body.style.overflow = '';
             sidebarLinks.forEach(link => { link.style.opacity = '0'; link.style.transform = 'translateX(20px)'; link.style.transition = 'none'; });
@@ -1077,7 +1074,7 @@
 
     <!-- Firebase Dynamic Loader -->
 
-    <script src="js/sidebar.js"></script>
+    <!-- <script src="js/sidebar.js"></script> -->
 </body>
 
 </html>

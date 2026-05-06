@@ -51,6 +51,10 @@
 
     <!-- CSS & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
@@ -195,10 +199,10 @@
                                         ${dateStr}
                                     </p>
                                 </div>
-                                <button onclick="window.downloadBase64PDF('${note.base64}', '${note.title}')" class="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#f5ede0] border border-[#ff771c]/20 text-[#ff771c] font-bold rounded-xl hover:bg-[#ff771c] hover:text-white hover:border-transparent transition-all duration-300 overflow-hidden relative">
+                                <button onclick="window.viewNote('${note.fileUrl || note.base64}', '${note.fileUrl ? 'url' : 'base64'}', '${note.title}')" class="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#f5ede0] border border-[#ff771c]/20 text-[#ff771c] font-bold rounded-xl hover:bg-[#ff771c] hover:text-white hover:border-transparent transition-all duration-300 overflow-hidden relative">
                                     <span class="relative z-10 flex items-center gap-2">
-                                        <svg class="w-5 h-5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                        Download Note
+                                        <svg class="w-5 h-5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        View Note
                                     </span>
                                 </button>
                             </div>
@@ -268,6 +272,84 @@
             return btn;
         }
 
+        window.viewNote = (content, type, title) => {
+            if (type === 'url') {
+                const overlay = document.createElement('div');
+                overlay.id = 'pdf-viewer-overlay';
+                overlay.className = 'fixed inset-0 z-[100] bg-[#161311] flex flex-col animate-[fadeIn_0.3s_ease-out] select-none';
+                overlay.oncontextmenu = () => false; // Disable right click
+                
+                overlay.innerHTML = `
+                    <div class="flex justify-between items-center p-4 bg-[#0a0807] text-white border-b border-white/10 shrink-0 z-50">
+                        <div class="flex items-center gap-4">
+                            <button onclick="this.closest('.fixed').remove()" class="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <h3 class="font-bold text-lg text-white">${title}</h3>
+                        </div>
+                        <div class="text-sm font-medium text-slate-400 bg-white/5 px-4 py-2 rounded-lg pointer-events-none">
+                            Secure View
+                        </div>
+                    </div>
+                    
+                    <!-- Watermark -->
+                    <div class="fixed inset-0 pointer-events-none z-10 flex items-center justify-center opacity-[0.03]">
+                        <img src="logo-with-text.png" class="w-[80vw] object-contain rotate-[-30deg]" alt="Watermark">
+                    </div>
+
+                    <div id="pdf-container" class="flex-1 w-full overflow-y-auto overflow-x-hidden bg-[#161311] relative z-20 py-8 px-4 flex flex-col items-center">
+                        <div id="pdf-loading" class="text-white flex flex-col items-center justify-center my-auto animate-pulse">
+                            <div class="w-12 h-12 border-4 border-[#ff771c]/30 border-t-[#ff771c] rounded-full animate-spin mb-4"></div>
+                            <p class="text-sm font-bold tracking-widest uppercase">Decrypting Note...</p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                // Anti-screenshot blur listener
+                const blurOverlay = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'blur(15px)'; };
+                const unblurOverlay = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'none'; };
+                window.addEventListener('blur', blurOverlay);
+                window.addEventListener('focus', unblurOverlay);
+
+                // PDF.js rendering logic
+                const container = document.getElementById('pdf-container');
+                const loading = document.getElementById('pdf-loading');
+
+                pdfjsLib.getDocument(content).promise.then(async pdf => {
+                    loading.remove();
+                    for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        
+                        // Calculate responsive scale
+                        const desiredWidth = Math.min(window.innerWidth * 0.95, 900);
+                        const initialViewport = page.getViewport({scale: 1});
+                        const scale = desiredWidth / initialViewport.width;
+                        const viewport = page.getViewport({scale: scale});
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'mb-6 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg pointer-events-none select-none max-w-full';
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        canvas.oncontextmenu = () => false;
+                        
+                        container.appendChild(canvas);
+                        
+                        await page.render({
+                            canvasContext: canvas.getContext('2d'), 
+                            viewport: viewport
+                        }).promise;
+                    }
+                }).catch(err => {
+                    console.error("PDF Render error: ", err);
+                    loading.innerHTML = `<p class="text-red-500 font-bold">Failed to load secure PDF.</p>`;
+                });
+                
+            } else {
+                window.downloadBase64PDF(content, title);
+            }
+        };
+
         window.downloadBase64PDF = (base64String, title) => {
             try {
                 let pdfURI = base64String;
@@ -299,7 +381,7 @@
         <div class="mx-auto max-w-[1400px] px-6 lg:px-12">
             <div class="flex h-20 items-center justify-between">
                 <a href="index.html" class="flex items-center gap-4 group">
-                    <img class="h-12 w-auto object-contain transition-transform group-hover:scale-105" src="logo-with-text.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo">
+                    <img class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] transition-transform group-hover:scale-105" src="logo-with-text.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo">
                 </a>
                 <div class="flex gap-4 items-center">
                     <a href="student-portal.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-[#546877] hover:text-[#161311] transition-colors px-4 py-2">
