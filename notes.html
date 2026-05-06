@@ -51,10 +51,6 @@
 
     <!-- CSS & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
@@ -81,6 +77,23 @@
         @keyframes fadeInUp {
             from { opacity: 0; transform: translate3d(0, 40px, 0); }
             to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #e2d9cc 25%, #d6ccbe 50%, #e2d9cc 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 1rem;
         }
         
         .light-noise-bg {
@@ -114,6 +127,26 @@
             z-index: 0;
             pointer-events: none;
             filter: blur(120px);
+        }
+
+        .note-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .note-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        /* Secure viewer styles */
+        #pdf-viewer-overlay {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        #pdf-viewer-overlay img {
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
         }
     </style>
 
@@ -310,89 +343,138 @@
             if (type === 'url') {
                 const overlay = document.createElement('div');
                 overlay.id = 'pdf-viewer-overlay';
-                overlay.className = 'fixed inset-0 z-[100] bg-[#161311] flex flex-col animate-[fadeIn_0.3s_ease-out] select-none';
-                overlay.oncontextmenu = () => false; // Disable right click
+                overlay.className = 'fixed inset-0 z-[100] bg-[#161311] flex flex-col select-none';
+                overlay.style.animation = 'fadeIn 0.3s ease-out';
+                overlay.oncontextmenu = (e) => { e.preventDefault(); return false; };
                 
                 overlay.innerHTML = `
                     <div class="flex justify-between items-center p-4 bg-[#0a0807] text-white border-b border-white/10 shrink-0 z-50">
                         <div class="flex items-center gap-4">
-                            <button onclick="this.closest('.fixed').remove()" class="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                            <button id="close-viewer-btn" class="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                             </button>
-                            <h3 class="font-bold text-lg text-white">${title}</h3>
+                            <h3 class="font-bold text-lg text-white truncate max-w-[60vw]">${title}</h3>
                         </div>
-                        <div class="text-sm font-medium text-slate-400 bg-white/5 px-4 py-2 rounded-lg pointer-events-none">
-                            Secure View
+                        <div class="flex items-center gap-3">
+                            <span id="page-counter" class="text-xs font-bold text-slate-400 bg-white/5 px-3 py-1.5 rounded-lg"></span>
+                            <div class="text-sm font-medium text-[#ff771c] bg-[#ff771c]/10 px-4 py-2 rounded-lg pointer-events-none flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                Secure
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Watermark -->
-                    <div class="fixed inset-0 pointer-events-none z-10 flex items-center justify-center opacity-[0.03]">
-                        <img src="logo-with-text.png" class="w-[80vw] object-contain rotate-[-30deg]" alt="Watermark">
+                    <div class="fixed inset-0 pointer-events-none z-10 flex items-center justify-center opacity-[0.04]">
+                        <img src="logo-with-text.png" class="w-[80vw] object-contain rotate-[-30deg]" draggable="false">
                     </div>
 
-                    <div id="pdf-container" class="flex-1 w-full overflow-y-auto overflow-x-hidden bg-[#161311] relative z-20 py-8 px-4 flex flex-col items-center">
-                        <div id="pdf-loading" class="text-white flex flex-col items-center justify-center my-auto animate-pulse">
-                            <div class="w-12 h-12 border-4 border-[#ff771c]/30 border-t-[#ff771c] rounded-full animate-spin mb-4"></div>
-                            <p class="text-sm font-bold tracking-widest uppercase">Decrypting Note...</p>
+                    <div id="pdf-container" class="flex-1 w-full overflow-y-auto overflow-x-hidden bg-[#1a1714] relative z-20 py-8 px-4 flex flex-col items-center gap-4">
+                        <div id="pdf-loading" class="text-white flex flex-col items-center justify-center my-auto">
+                            <div class="w-14 h-14 border-4 border-[#ff771c]/30 border-t-[#ff771c] rounded-full animate-spin mb-5"></div>
+                            <p class="text-sm font-bold tracking-widest uppercase text-[#ff771c]">Loading Pages...</p>
                         </div>
                     </div>
                 `;
                 document.body.appendChild(overlay);
+                document.body.style.overflow = 'hidden';
 
-                // Anti-screenshot blur listener
-                const blurOverlay = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'blur(15px)'; };
-                const unblurOverlay = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'none'; };
-                window.addEventListener('blur', blurOverlay);
-                window.addEventListener('focus', unblurOverlay);
+                // Close button handler
+                document.getElementById('close-viewer-btn').onclick = () => {
+                    overlay.remove();
+                    document.body.style.overflow = '';
+                    window.removeEventListener('blur', blurHandler);
+                    window.removeEventListener('focus', focusHandler);
+                };
 
-                // PDF.js rendering logic
+                // Anti-screenshot blur
+                const blurHandler = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'blur(20px)'; };
+                const focusHandler = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'none'; };
+                window.addEventListener('blur', blurHandler);
+                window.addEventListener('focus', focusHandler);
+
+                // Block keyboard shortcuts (Ctrl+S, Ctrl+P, PrintScreen)
+                const keyHandler = (e) => {
+                    if ((e.ctrlKey && (e.key === 's' || e.key === 'p')) || e.key === 'PrintScreen') {
+                        e.preventDefault();
+                        return false;
+                    }
+                };
+                document.addEventListener('keydown', keyHandler);
+
+                // Cloudinary page-by-page image rendering
                 const container = document.getElementById('pdf-container');
                 const loading = document.getElementById('pdf-loading');
+                const pageCounter = document.getElementById('page-counter');
 
-                // Disable range/stream requests to avoid CORS issues with Cloudinary CDN
-                pdfjsLib.getDocument({
-                    url: content,
-                    disableRange: true,
-                    disableStream: true,
-                    disableAutoFetch: false
-                }).promise.then(async pdf => {
-                    loading.remove();
-                    for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                        const page = await pdf.getPage(pageNum);
+                // Convert Cloudinary PDF URL to page image URL
+                // URL format: .../image/upload/v123/folder/file.pdf
+                // Page image: .../image/upload/pg_N,w_1200,f_auto,q_auto/v123/folder/file.pdf
+                const urlParts = content.split('/upload/');
+                if (urlParts.length === 2) {
+                    let pageNum = 1;
+                    let loadedCount = 0;
+                    const maxPages = 200; // safety limit
+
+                    const loadPage = (num) => {
+                        const pageUrl = `${urlParts[0]}/upload/pg_${num},w_1200,f_auto,q_auto/${urlParts[1]}`;
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.draggable = false;
+                        img.oncontextmenu = () => false;
                         
-                        // Calculate responsive scale
-                        const desiredWidth = Math.min(window.innerWidth * 0.95, 900);
-                        const initialViewport = page.getViewport({scale: 1});
-                        const scale = desiredWidth / initialViewport.width;
-                        const viewport = page.getViewport({scale: scale});
+                        img.onload = () => {
+                            if (loading && loading.parentNode) loading.remove();
+                            
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'relative max-w-[900px] w-full';
+                            wrapper.style.animation = 'fadeIn 0.4s ease-out';
+                            
+                            img.className = 'w-full h-auto rounded-lg shadow-[0_4px_30px_rgba(0,0,0,0.4)] select-none';
+                            img.style.cssText = 'pointer-events: none; -webkit-user-drag: none; user-select: none;';
+                            
+                            wrapper.appendChild(img);
+                            container.appendChild(wrapper);
+                            
+                            loadedCount++;
+                            pageCounter.textContent = `${loadedCount} pages`;
+                            
+                            // Load next page
+                            if (num < maxPages) {
+                                loadPage(num + 1);
+                            }
+                        };
                         
-                        const canvas = document.createElement('canvas');
-                        canvas.className = 'mb-6 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg pointer-events-none select-none max-w-full';
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        canvas.oncontextmenu = () => false;
+                        img.onerror = () => {
+                            // No more pages — done loading
+                            if (loading && loading.parentNode) loading.remove();
+                            if (loadedCount === 0) {
+                                container.innerHTML = `<p class="text-red-400 font-bold text-center my-auto">Could not load this PDF. Please try again.</p>`;
+                            }
+                            // Clean up keyboard handler when viewer is closed
+                            const closeBtn = document.getElementById('close-viewer-btn');
+                            if (closeBtn) {
+                                const origClick = closeBtn.onclick;
+                                closeBtn.onclick = () => {
+                                    document.removeEventListener('keydown', keyHandler);
+                                    if (origClick) origClick();
+                                };
+                            }
+                        };
                         
-                        container.appendChild(canvas);
-                        
-                        await page.render({
-                            canvasContext: canvas.getContext('2d'), 
-                            viewport: viewport
-                        }).promise;
-                    }
-                }).catch(err => {
-                    console.error("PDF.js failed, using fallback viewer:", err);
-                    // Fallback: use protected iframe viewer
+                        img.src = pageUrl;
+                    };
+                    
+                    loadPage(1);
+                } else {
+                    // URL format not recognized, try iframe fallback
                     loading.remove();
                     container.innerHTML = `
                         <div class="relative w-full" style="height: calc(100vh - 80px);">
-                            <iframe src="${content}#toolbar=0&navpanes=0&scrollbar=1" class="w-full h-full border-none rounded-lg" style="pointer-events: auto;"></iframe>
-                            <!-- Transparent overlay blocks right-click on iframe -->
+                            <iframe src="${content}#toolbar=0&navpanes=0" class="w-full h-full border-none rounded-lg"></iframe>
                             <div class="absolute top-0 left-0 w-full h-12 bg-[#161311] z-30"></div>
                         </div>
                     `;
-                    container.oncontextmenu = () => false;
-                });
+                }
                 
             } else {
                 window.downloadBase64PDF(content, title);
