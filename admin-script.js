@@ -1234,6 +1234,10 @@ if (uploadNoteForm) {
         const errorMsg = document.getElementById('noteFileError');
         const title = document.getElementById('noteTitle').value;
         const noteClass = document.getElementById('noteClass').value;
+        const noteSubject = document.getElementById('noteSubject').value;
+        const progressContainer = document.getElementById('noteUploadProgress');
+        const progressBar = document.getElementById('noteProgressBar');
+        const progressPercent = document.getElementById('noteProgressPercent');
 
         const file = fileInput.files[0];
         if (!file) return;
@@ -1245,7 +1249,10 @@ if (uploadNoteForm) {
         errorMsg.classList.add('hidden');
 
         btn.disabled = true;
-        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading to Cloudinary...`;
+        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading...`;
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0%';
 
         try {
             const cloudName = "dc77zv3qa";
@@ -1255,33 +1262,60 @@ if (uploadNoteForm) {
             formData.append("file", file);
             formData.append("upload_preset", uploadPreset);
 
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
-                method: "POST",
-                body: formData
+            // Use XMLHttpRequest for progress tracking
+            const cloudinaryUrl = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+                
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = pct + '%';
+                        progressPercent.textContent = pct + '%';
+                        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading ${pct}%`;
+                    }
+                };
+                
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const data = JSON.parse(xhr.responseText);
+                        resolve(data.secure_url);
+                    } else {
+                        try {
+                            const errData = JSON.parse(xhr.responseText);
+                            reject(new Error(errData.error?.message || 'Cloudinary upload failed'));
+                        } catch {
+                            reject(new Error('Upload failed with status ' + xhr.status));
+                        }
+                    }
+                };
+                
+                xhr.onerror = () => reject(new Error('Network error during upload'));
+                xhr.send(formData);
             });
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error?.message || "Cloudinary upload failed");
-            }
+
+            btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Saving...`;
 
             await addDoc(collection(db, "notes"), {
                 title: title,
                 class: noteClass,
-                fileUrl: data.secure_url,
+                subject: noteSubject,
+                fileUrl: cloudinaryUrl,
                 createdAt: serverTimestamp()
             });
 
             uploadNoteForm.reset();
+            progressContainer.classList.add('hidden');
             await loadNotes();
             alert('Note uploaded successfully!');
 
         } catch (error) {
             console.error("Error uploading note:", error);
-            alert('Failed to upload note.');
+            alert('Failed to upload note: ' + error.message);
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> Upload Note`;
+            progressContainer.classList.add('hidden');
             lucide.createIcons();
         }
     });
@@ -1313,19 +1347,23 @@ window.renderNotes = function() {
     if(!tbody) return;
     
     if (notesList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">No notes uploaded yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">No notes uploaded yet.</td></tr>';
         return;
     }
 
     let html = '';
     notesList.forEach(note => {
         const dateStr = note.createdAt ? new Date(note.createdAt.toDate()).toLocaleDateString() : 'Unknown';
+        const subjectLabel = note.subject || '—';
         
         html += `
             <tr class="hover:bg-slate-50/50 transition-colors group">
                 <td class="p-4 text-sm font-bold text-[#0B2447]">${note.title}</td>
                 <td class="p-4">
                     <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-lg tracking-widest">${note.class}</span>
+                </td>
+                <td class="p-4">
+                    <span class="px-2.5 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase rounded-lg tracking-widest">${subjectLabel}</span>
                 </td>
                 <td class="p-4 text-sm font-semibold text-slate-500">${dateStr}</td>
                 <td class="p-4 text-right">
