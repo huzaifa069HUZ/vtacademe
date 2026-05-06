@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { getFirestore, collection, getDocs, getDocsFromCache, getDocsFromServer, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Enable offline persistence (cache data in IndexedDB)
 enableIndexedDbPersistence(db).catch((err) => {
@@ -22,7 +24,6 @@ enableIndexedDbPersistence(db).catch((err) => {
 
 // Global State
 let studentsList = [];
-const MASTER_PASSWORD = "21DEVHUZAIFA";
 
 // DOM Elements
 const loginSection = document.getElementById("loginSection");
@@ -35,21 +36,42 @@ const logoutBtn = document.getElementById("logoutBtn");
 const studentCardGrid = document.getElementById("studentCardGrid");
 const searchInput = document.getElementById("searchInput");
 
-// Init Auth Check
-if (localStorage.getItem("vt_admin_logged_in") === "true") {
-    showDashboard();
-}
-
-// Login Handler
-loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const password = document.getElementById("loginPassword").value;
-
-    if (password === MASTER_PASSWORD) {
-        localStorage.setItem("vt_admin_logged_in", "true");
+// Firebase Auth State Listener — auto-detects login/logout
+onAuthStateChanged(auth, (user) => {
+    if (user) {
         showDashboard();
     } else {
-        showAlert("Incorrect password. Access denied.", "red");
+        loginSection.classList.remove("hidden");
+        dashboardSection.classList.add("hidden");
+    }
+});
+
+// Login Handler
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Authenticating...';
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged will handle showing the dashboard
+    } catch (error) {
+        let msg = "Login failed. Please check your credentials.";
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            msg = "Incorrect email or password.";
+        } else if (error.code === 'auth/user-not-found') {
+            msg = "No admin account found with this email.";
+        } else if (error.code === 'auth/too-many-requests') {
+            msg = "Too many failed attempts. Try again later.";
+        }
+        showAlert(msg, "red");
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Authenticate <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+        lucide.createIcons();
     }
 });
 
@@ -59,10 +81,9 @@ function showDashboard() {
     fetchStudents();
 }
 
-logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("vt_admin_logged_in");
-    loginSection.classList.remove("hidden");
-    dashboardSection.classList.add("hidden");
+logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    document.getElementById("loginEmail").value = "";
     document.getElementById("loginPassword").value = "";
     loginAlert.classList.add("hidden");
 });

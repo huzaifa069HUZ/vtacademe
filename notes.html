@@ -350,7 +350,13 @@
                 const container = document.getElementById('pdf-container');
                 const loading = document.getElementById('pdf-loading');
 
-                pdfjsLib.getDocument(content).promise.then(async pdf => {
+                // Disable range/stream requests to avoid CORS issues with Cloudinary CDN
+                pdfjsLib.getDocument({
+                    url: content,
+                    disableRange: true,
+                    disableStream: true,
+                    disableAutoFetch: false
+                }).promise.then(async pdf => {
                     loading.remove();
                     for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                         const page = await pdf.getPage(pageNum);
@@ -375,8 +381,17 @@
                         }).promise;
                     }
                 }).catch(err => {
-                    console.error("PDF Render error: ", err);
-                    loading.innerHTML = `<p class="text-red-500 font-bold">Failed to load secure PDF.</p>`;
+                    console.error("PDF.js failed, using fallback viewer:", err);
+                    // Fallback: use protected iframe viewer
+                    loading.remove();
+                    container.innerHTML = `
+                        <div class="relative w-full" style="height: calc(100vh - 80px);">
+                            <iframe src="${content}#toolbar=0&navpanes=0&scrollbar=1" class="w-full h-full border-none rounded-lg" style="pointer-events: auto;"></iframe>
+                            <!-- Transparent overlay blocks right-click on iframe -->
+                            <div class="absolute top-0 left-0 w-full h-12 bg-[#161311] z-30"></div>
+                        </div>
+                    `;
+                    container.oncontextmenu = () => false;
                 });
                 
             } else {
