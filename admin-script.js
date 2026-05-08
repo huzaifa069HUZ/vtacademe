@@ -1900,3 +1900,195 @@ async function loadScoreboardTestButtons() {
         // Silent fail for button re-render
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SCOREBOARD BATCH TEST LOGIC
+// ═══════════════════════════════════════════════════════════════════
+
+window.switchScoreboardTab = function(tab) {
+    if (tab === 'create') {
+        document.getElementById('sbPanelCreate').classList.remove('hidden');
+        document.getElementById('sbPanelView').classList.add('hidden');
+        document.getElementById('sbTabCreate').classList.replace('text-slate-500', 'text-[#0B2447]');
+        document.getElementById('sbTabCreate').classList.add('bg-white', 'shadow-md', 'border', 'border-slate-200');
+        document.getElementById('sbTabView').classList.replace('text-[#0B2447]', 'text-slate-500');
+        document.getElementById('sbTabView').classList.remove('bg-white', 'shadow-md', 'border', 'border-slate-200');
+    } else {
+        document.getElementById('sbPanelCreate').classList.add('hidden');
+        document.getElementById('sbPanelView').classList.remove('hidden');
+        document.getElementById('sbTabView').classList.replace('text-slate-500', 'text-[#0B2447]');
+        document.getElementById('sbTabView').classList.add('bg-white', 'shadow-md', 'border', 'border-slate-200');
+        document.getElementById('sbTabCreate').classList.replace('text-[#0B2447]', 'text-slate-500');
+        document.getElementById('sbTabCreate').classList.remove('bg-white', 'shadow-md', 'border', 'border-slate-200');
+        loadScoreboardTests();
+    }
+};
+
+window.loadBatchStudents = function() {
+    const cls = document.getElementById('batchTestClass').value;
+    const container = document.getElementById('batchStudentsContainer');
+    const emptyState = document.getElementById('batchEmptyState');
+    const listEl = document.getElementById('batchStudentsList');
+    
+    if (!cls) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    container.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+    
+    const filtered = studentsList.filter(s => s.course === cls || s.batch === cls || s.std === cls || (s.std && s.std.includes(cls)));
+    document.getElementById('batchStudentCount').textContent = filtered.length;
+    
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="text-center py-6 text-slate-400 font-bold text-xs uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-xl">No students found in ' + cls + '</div>';
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(s => {
+        const initials = (s.name || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+        const avatarHtml = s.photoBase64 ? 
+            '<img src="' + s.photoBase64 + '" class="w-full h-full object-cover rounded-lg">' : 
+            '<span class="text-[10px] font-black text-slate-500">' + initials + '</span>';
+        const idStr = s.admissionNo || s.formNo || s.id.slice(0, 6);
+        
+        html += `
+            <div class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-indigo-200 transition-colors batch-student-row" data-id="${s.id}" data-name="${(s.name||'').replace(/"/g, '&quot;')}" data-photo="${s.photoBase64||''}" data-course="${s.course||s.batch||s.std||''}" data-adm="${idStr}">
+                <input type="checkbox" checked class="batch-student-cb w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer" onchange="window.updateBatchSelectedCount()">
+                <div class="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center shrink-0 border border-slate-300 overflow-hidden">
+                    ${avatarHtml}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-black text-[#0B2447] truncate">${s.name || 'Unnamed'}</div>
+                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${idStr}</div>
+                </div>
+                <div class="shrink-0 w-24">
+                    <input type="number" step="0.5" min="0" placeholder="Marks" class="batch-student-marks w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-[#0B2447] font-black text-center shadow-sm">
+                </div>
+            </div>
+        `;
+    });
+    
+    listEl.innerHTML = html;
+    window.updateBatchSelectedCount();
+};
+
+window.batchToggleAll = function() {
+    const cbs = document.querySelectorAll('.batch-student-cb');
+    if (cbs.length === 0) return;
+    
+    const allChecked = Array.from(cbs).every(cb => cb.checked);
+    cbs.forEach(cb => cb.checked = !allChecked);
+    
+    const btn = document.getElementById('batchSelectAllBtn');
+    btn.textContent = allChecked ? 'Select All' : 'Deselect All';
+    window.updateBatchSelectedCount();
+};
+
+window.updateBatchSelectedCount = function() {
+    const cbs = document.querySelectorAll('.batch-student-cb:checked');
+    document.getElementById('batchSelectedCount').textContent = cbs.length + ' selected';
+};
+
+window.publishBatchTest = async function() {
+    const tName = document.getElementById('batchTestName').value.trim();
+    const tDate = document.getElementById('batchTestDate').value;
+    const tSub = document.getElementById('batchTestSubject').value;
+    const tClass = document.getElementById('batchTestClass').value;
+    const tTotal = Number(document.getElementById('batchTestTotal').value);
+    
+    if (!tName || !tDate || !tSub || !tClass || !tTotal) {
+        return alert("Please fill all test details (Name, Date, Subject, Class, Total Marks).");
+    }
+    
+    const rows = document.querySelectorAll('.batch-student-row');
+    const entries = [];
+    
+    rows.forEach(row => {
+        const cb = row.querySelector('.batch-student-cb');
+        if (cb.checked) {
+            const marksInput = row.querySelector('.batch-student-marks');
+            const marksStr = marksInput.value.trim();
+            if (marksStr !== "") {
+                entries.push({
+                    id: row.dataset.id,
+                    name: row.dataset.name,
+                    photo: row.dataset.photo,
+                    course: row.dataset.course,
+                    adm: row.dataset.adm,
+                    obtained: Number(marksStr)
+                });
+            }
+        }
+    });
+    
+    if (entries.length === 0) {
+        return alert("Please enter marks for at least one selected student.");
+    }
+    
+    const btn = document.getElementById('batchPublishBtn');
+    btn.disabled = true;
+    const originalBtnContent = btn.innerHTML;
+    btn.innerHTML = '<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Publishing...';
+    
+    try {
+        const timestamp = serverTimestamp();
+        let successCount = 0;
+        
+        for (const entry of entries) {
+            // Write to student's assessments subcollection
+            const payload = {
+                testName: tName,
+                date: tDate,
+                obtained: entry.obtained,
+                total: tTotal,
+                createdAt: timestamp
+            };
+            const assessRef = await addDoc(collection(db, "students", entry.id, "assessments"), payload);
+            
+            // Write to scoreboard collection
+            const percentage = tTotal > 0 ? ((entry.obtained / tTotal) * 100) : 0;
+            await addDoc(collection(db, "scoreboard"), {
+                testName: tName,
+                date: tDate,
+                studentId: entry.id,
+                assessmentId: assessRef.id,
+                studentName: entry.name,
+                studentPhoto: entry.photo,
+                course: entry.course,
+                admissionNo: entry.adm,
+                obtained: entry.obtained,
+                total: tTotal,
+                percentage: Math.round(percentage * 10) / 10,
+                subject: tSub,
+                testClass: tClass,
+                createdAt: timestamp
+            });
+            successCount++;
+        }
+        
+        alert(`Successfully published results for ${successCount} students!`);
+        
+        // Reset inputs
+        document.getElementById('batchTestName').value = '';
+        document.getElementById('batchTestDate').value = '';
+        const rowsToClear = document.querySelectorAll('.batch-student-marks');
+        rowsToClear.forEach(r => r.value = '');
+        
+        // Switch to View Tests tab automatically
+        window.switchScoreboardTab('view');
+        
+    } catch (err) {
+        console.error("Batch Publish Error:", err);
+        alert("An error occurred while publishing: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnContent;
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+};

@@ -146,6 +146,7 @@
 
         let activeTest = null;
         let activeClass = 'all';
+        let activeSubject = 'all';
         let allEntries = [];
 
         async function loadScoreboard() {
@@ -211,6 +212,7 @@
         window.selectTest = function(testName) {
             activeTest = testName;
             activeClass = 'all';
+            activeSubject = 'all';
 
             // Update pill styles
             document.querySelectorAll('.test-pill').forEach(btn => {
@@ -228,6 +230,7 @@
 
         window.filterClass = function(cls) {
             activeClass = cls;
+            activeSubject = 'all'; // reset subject when class changes
 
             // Update class pill styles
             document.querySelectorAll('.class-pill').forEach(btn => {
@@ -243,6 +246,11 @@
             renderLeaderboard();
         };
 
+        window.filterSubject = function(sub) {
+            activeSubject = sub;
+            renderLeaderboard();
+        };
+
         function renderLeaderboard() {
             const container = document.getElementById('scoreboard-container');
             const titleEl = document.getElementById('active-test-name');
@@ -255,11 +263,20 @@
 
             // Get unique classes for class filter
             const classes = new Set();
-            entries.forEach(e => { if (e.course) classes.add(e.course); });
+            const subjects = new Set();
+            entries.forEach(e => { 
+                if (e.course) classes.add(e.course); 
+                if (e.subject) subjects.add(e.subject);
+            });
 
             // Apply class filter
             if (activeClass !== 'all') {
                 entries = entries.filter(e => e.course === activeClass);
+            }
+            
+            // Apply subject filter
+            if (activeSubject !== 'all') {
+                entries = entries.filter(e => e.subject === activeSubject);
             }
 
             // Sort by percentage descending
@@ -268,8 +285,7 @@
                 return (b.obtained || 0) - (a.obtained || 0);
             });
 
-            // Build class filter bar
-            let classHtml = '<div id="class-filter-bar" class="flex flex-wrap justify-center gap-2 mb-10">';
+            let classHtml = '<div id="class-filter-bar" class="flex flex-wrap justify-center gap-2 mb-6">';
             classHtml += `<button onclick="window.filterClass('all')" data-cls="all" 
                 class="class-pill px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border ${activeClass === 'all' ? 'bg-[#546877] text-white border-[#546877]' : 'bg-white text-[#546877] border-[#161311]/10'} shadow-sm">
                 All Classes</button>`;
@@ -280,12 +296,28 @@
             });
             classHtml += '</div>';
 
+            let subjectHtml = '';
+            if (subjects.size > 0) {
+                subjectHtml = '<div id="subject-filter-bar" class="flex flex-wrap justify-center gap-2 mb-10">';
+                subjectHtml += `<button onclick="window.filterSubject('all')" data-sub="all" 
+                    class="subject-pill px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border ${activeSubject === 'all' ? 'bg-[#ff771c] text-white border-[#ff771c]' : 'bg-white text-[#ff771c] border-[#ff771c]/30'} shadow-sm">
+                    All Subjects</button>`;
+                subjects.forEach(sub => {
+                    subjectHtml += `<button onclick="window.filterSubject('${sub}')" data-sub="${sub}"
+                        class="subject-pill px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border ${activeSubject === sub ? 'bg-[#ff771c] text-white border-[#ff771c]' : 'bg-white text-[#ff771c] border-[#ff771c]/30'} shadow-sm">
+                        ${sub}</button>`;
+                });
+                subjectHtml += '</div>';
+            } else {
+                classHtml = classHtml.replace('mb-6', 'mb-10');
+            }
+
             if (entries.length === 0) {
-                container.innerHTML = classHtml + `<div class="w-full text-center py-16 text-[#546877] font-medium text-lg border border-[#161311]/10 rounded-3xl bg-white shadow-sm">No results for this filter.</div>`;
+                container.innerHTML = classHtml + subjectHtml + `<div class="w-full text-center py-16 text-[#546877] font-medium text-lg border border-[#161311]/10 rounded-3xl bg-white shadow-sm">No results for this filter.</div>`;
                 return;
             }
 
-            let html = classHtml;
+            let html = classHtml + subjectHtml;
 
             // Top 3 podium for desktop
             if (entries.length >= 3) {
@@ -348,7 +380,10 @@
                         ${avatarHtml}
                     </div>
                     <h3 class="text-lg font-black text-[#161311] mb-1 truncate">${entry.studentName || 'Unknown'}</h3>
-                    ${entry.course ? `<span class="text-[10px] font-bold uppercase tracking-widest text-[#546877] bg-[#546877]/10 px-3 py-1 rounded-full">${entry.course}</span>` : ''}
+                    <div class="flex items-center justify-center gap-1">
+                        ${entry.course ? `<span class="text-[10px] font-bold uppercase tracking-widest text-[#546877] bg-[#546877]/10 px-3 py-1 rounded-full">${entry.course}</span>` : ''}
+                        ${entry.subject ? `<span class="text-[10px] font-bold uppercase tracking-widest text-[#ff771c] bg-[#ff771c]/10 px-3 py-1 rounded-full">${entry.subject}</span>` : ''}
+                    </div>
                     <div class="mt-4">
                         <div class="text-3xl font-black text-[#161311]">${perc}<span class="text-lg text-[#546877]">%</span></div>
                         <div class="text-xs font-bold text-[#546877] mt-1">${entry.obtained || 0} / ${entry.total || 0}</div>
@@ -386,6 +421,7 @@
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-sm sm:text-base font-bold text-[#161311] truncate">${entry.studentName || 'Unknown'}</span>
                             ${entry.course ? `<span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-[#546877]/10 text-[#546877] shrink-0 hidden sm:inline">${entry.course}</span>` : ''}
+                            ${entry.subject ? `<span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-[#ff771c]/10 text-[#ff771c] shrink-0 hidden sm:inline">${entry.subject}</span>` : ''}
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="flex-1 h-2 bg-[#161311]/5 rounded-full overflow-hidden">
