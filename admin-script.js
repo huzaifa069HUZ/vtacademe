@@ -1280,40 +1280,67 @@ if (uploadNoteForm) {
             const cloudName = "dc77zv3qa";
             const uploadPreset = "vt_academy_notes";
             
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", uploadPreset);
+            // Use Chunked Upload to bypass 10MB free tier limit (Cloudinary supports up to 100MB with chunking)
+            const cloudinaryUrl = await new Promise(async (resolve, reject) => {
+                try {
+                    const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+                    const uniqueUploadId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    let start = 0;
+                    let finalUrl = null;
 
-            // Use XMLHttpRequest for progress tracking
-            const cloudinaryUrl = await new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
-                
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const pct = Math.round((e.loaded / e.total) * 100);
-                        progressBar.style.width = pct + '%';
-                        progressPercent.textContent = pct + '%';
-                        btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading ${pct}%`;
+                    while (start < file.size) {
+                        const end = Math.min(start + chunkSize, file.size);
+                        const chunk = file.slice(start, end);
+                        
+                        const fd = new FormData();
+                        fd.append("file", chunk, file.name);
+                        fd.append("upload_preset", uploadPreset);
+
+                        const isLastChunk = end === file.size;
+
+                        await new Promise((resChunk, rejChunk) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+                            xhr.setRequestHeader('X-Unique-Upload-Id', uniqueUploadId);
+                            xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`);
+                            
+                            xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                    const overallLoaded = start + e.loaded;
+                                    const pct = Math.round((overallLoaded / file.size) * 100);
+                                    progressBar.style.width = pct + '%';
+                                    progressPercent.textContent = pct + '%';
+                                    btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Uploading ${pct}%`;
+                                }
+                            };
+
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    if (isLastChunk) {
+                                        const data = JSON.parse(xhr.responseText);
+                                        finalUrl = data.secure_url;
+                                    }
+                                    resChunk();
+                                } else {
+                                    try {
+                                        const errData = JSON.parse(xhr.responseText);
+                                        rejChunk(new Error(errData.error?.message || 'Cloudinary upload failed'));
+                                    } catch {
+                                        rejChunk(new Error('Upload failed with status ' + xhr.status));
+                                    }
+                                }
+                            };
+                            
+                            xhr.onerror = () => rejChunk(new Error('Network error during chunk upload'));
+                            xhr.send(fd);
+                        });
+
+                        start = end;
                     }
-                };
-                
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const data = JSON.parse(xhr.responseText);
-                        resolve(data.secure_url);
-                    } else {
-                        try {
-                            const errData = JSON.parse(xhr.responseText);
-                            reject(new Error(errData.error?.message || 'Cloudinary upload failed'));
-                        } catch {
-                            reject(new Error('Upload failed with status ' + xhr.status));
-                        }
-                    }
-                };
-                
-                xhr.onerror = () => reject(new Error('Network error during upload'));
-                xhr.send(formData);
+                    resolve(finalUrl);
+                } catch(err) {
+                    reject(err);
+                }
             });
 
             btn.innerHTML = `<i class="animate-spin w-4 h-4 rounded-full border-2 border-white border-t-transparent inline-block mr-2"></i> Saving...`;
