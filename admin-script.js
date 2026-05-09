@@ -218,6 +218,7 @@ function renderStudents(data) {
                 (student.phone ? '<span class="px-2.5 py-1 bg-slate-50 text-slate-500 text-[9px] font-bold rounded-lg tracking-wide border border-slate-100 ml-auto"><i data-lucide="phone" class="w-3 h-3 inline-block mr-1 -mt-px"></i>' + student.phone + '</span>' : '') +
             '</div>' +
             '<div class="flex items-center gap-2 pt-3 border-t border-slate-50">' +
+                '<button onclick="window.printForm(\'' + student.id + '\')" class="py-2 px-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors text-[10px] font-bold uppercase tracking-widest border border-emerald-100" title="Print Admission Form"><i data-lucide="printer" class="w-3.5 h-3.5"></i></button>' +
                 '<button onclick="window.editStudent(\'' + student.id + '\')" class="flex-1 py-2 text-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors text-[10px] font-bold uppercase tracking-widest border border-blue-100">Edit</button>' +
                 '<button onclick="window.deleteStudent(\'' + student.id + '\')" class="py-2 px-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors text-[10px] font-bold uppercase tracking-widest border border-red-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
             '</div>';
@@ -1801,8 +1802,14 @@ window.loadAdminLeaderboard = async function(testName) {
             leaderboardEl.innerHTML = classFilterHtml + '<div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">' +
                 '<p class="text-xs font-bold uppercase tracking-widest text-slate-400">No entries for this filter.</p>' +
                 '</div>';
+            var printBtn = document.getElementById('adminPrintScoreboardBtn');
+            if (printBtn) printBtn.style.display = 'none';
             return;
         }
+
+        var printBtn = document.getElementById('adminPrintScoreboardBtn');
+        if (printBtn) printBtn.style.display = 'flex';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         var html = classFilterHtml;
         html += '<div class="space-y-2">';
@@ -1858,6 +1865,142 @@ window.filterScoreboardClass = function(cls) {
     scoreboardActiveClass = cls;
     if (scoreboardActiveTest) {
         window.loadAdminLeaderboard(scoreboardActiveTest);
+    }
+};
+
+window.printAdminScoreboard = async function() {
+    if (!scoreboardActiveTest) return;
+
+    var printContainer = document.getElementById('printContainer');
+    if (!printContainer) return;
+
+    var btn = document.getElementById('adminPrintScoreboardBtn');
+    var originalBtnContent = btn.innerHTML;
+    btn.innerHTML = '<i class="animate-spin w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent inline-block mr-1"></i> Printing...';
+    btn.disabled = true;
+
+    try {
+        var q = query(collection(db, 'scoreboard'), where('testName', '==', scoreboardActiveTest));
+        var snap = await getDocs(q);
+
+        var entries = [];
+        snap.forEach(function(d) {
+            entries.push({ id: d.id, ...d.data() });
+        });
+
+        if (scoreboardActiveClass !== 'all') {
+            entries = entries.filter(function(e) { return e.course === scoreboardActiveClass; });
+        }
+
+        entries.sort(function(a, b) {
+            if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+            return (b.obtained || 0) - (a.obtained || 0);
+        });
+
+        if (entries.length === 0) {
+            alert("No data to print.");
+            btn.innerHTML = originalBtnContent;
+            btn.disabled = false;
+            return;
+        }
+
+        var printTitle = scoreboardActiveTest + " - Results";
+        if (scoreboardActiveClass !== 'all') printTitle += " | Class: " + scoreboardActiveClass;
+
+        var html = `
+            <div style="font-family: 'Outfit', sans-serif; max-width: 800px; margin: 0 auto; padding-top: 0px;">
+                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px;">
+                        <img src="logo.jpeg" style="height: 45px; border-radius: 6px;" alt="VT Academe Logo">
+                        <h1 style="font-size: 26px; font-weight: 900; color: #0B2447; margin: 0; font-family: 'DM Serif Display', serif;">VT ACADEME</h1>
+                    </div>
+                    <h2 style="font-size: 16px; font-weight: 700; color: #475569; margin: 0;">${printTitle}</h2>
+                </div>
+        `;
+
+        if (entries.length >= 3) {
+            html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; page-break-inside: avoid;">`;
+            
+            const podiumOrder = [
+                { e: entries[1], rank: 2, medal: '🥈', border: '#cbd5e1', bg: '#f8fafc' },
+                { e: entries[0], rank: 1, medal: '🥇', border: '#fde047', bg: '#fefce8' },
+                { e: entries[2], rank: 3, medal: '🥉', border: '#fdba74', bg: '#fff7ed' }
+            ];
+
+            podiumOrder.forEach(item => {
+                const initials = (item.e.studentName || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+                const avatarHtml = item.e.studentPhoto 
+                    ? `<img src="${item.e.studentPhoto}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`
+                    : `<span style="font-size: 16px; font-weight: 900; color: #64748b;">${initials}</span>`;
+                
+                html += `
+                    <div style="background-color: ${item.bg}; border: 1.5px solid ${item.border}; border-radius: 12px; padding: 12px 8px; text-align: center; ${item.rank === 1 ? 'transform: translateY(-8px);' : ''}">
+                        <div style="font-size: 24px; margin-bottom: 6px;">${item.medal}</div>
+                        <div style="width: 45px; height: 45px; border-radius: 10px; background: white; border: 1.5px solid ${item.border}; margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            ${avatarHtml}
+                        </div>
+                        <h3 style="font-size: 13px; font-weight: 900; color: #0B2447; margin: 0 0 3px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.e.studentName || 'Unknown'}</h3>
+                        <div style="font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
+                            ${item.e.course || ''} ${item.e.subject ? '• ' + item.e.subject : ''}
+                        </div>
+                        <div style="font-size: 18px; font-weight: 900; color: #0B2447;">${item.e.percentage || 0}<span style="font-size: 11px; color: #64748b;">%</span></div>
+                        <div style="font-size: 10px; font-weight: 700; color: #64748b; margin-top: 2px;">${item.e.obtained || 0} / ${item.e.total || 0}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+
+        html += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px;">`;
+        
+        const listEntries = entries.length >= 3 ? entries.slice(3) : entries;
+        
+        listEntries.forEach((entry, idx) => {
+            const rank = entries.length >= 3 ? idx + 4 : idx + 1;
+            const perc = entry.percentage || 0;
+            
+            let medalHtml = `<div style="width: 20px; height: 20px; border-radius: 4px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; color: #64748b; flex-shrink: 0;">${rank}</div>`;
+
+            html += `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; page-break-inside: avoid;">
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+                        ${medalHtml}
+                        <div style="font-size: 12px; font-weight: 800; color: #0B2447; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${entry.studentName || 'Unknown'}</div>
+                    </div>
+                    <div style="text-align: right; flex-shrink: 0; margin-left: 8px;">
+                        <span style="font-size: 12px; font-weight: 900; color: #0B2447;">${perc}%</span>
+                        <span style="font-size: 9px; font-weight: 700; color: #64748b; margin-left: 3px;">(${entry.obtained || 0}/${entry.total || 0})</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+
+        html += `
+            <div style="text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 10px; font-weight: 600; color: #64748b; margin: 0; letter-spacing: 0.05em; text-transform: uppercase;">
+                    Check the authenticity of the result from: <a href="https://www.vtacademe.com/scoreboard.html" style="color: #0B2447; font-weight: 900; text-decoration: none;">https://www.vtacademe.com/scoreboard.html</a>
+                </p>
+            </div>
+        `;
+        
+        html += `</div>`;
+
+        printContainer.innerHTML = html;
+
+        btn.innerHTML = originalBtnContent;
+        btn.disabled = false;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        setTimeout(() => {
+            window.print();
+        }, 300);
+
+    } catch(err) {
+        console.error('Error preparing print:', err);
+        alert("Failed to prepare print view: " + err.message);
+        btn.innerHTML = originalBtnContent;
+        btn.disabled = false;
     }
 };
 
@@ -2091,4 +2234,251 @@ window.publishBatchTest = async function() {
             lucide.createIcons();
         }
     }
+};
+
+// Print Form Function
+window.printForm = (id) => {
+    const student = studentsList.find(s => s.id === id);
+    if (!student) return;
+
+    const printContainer = document.getElementById('printContainer');
+    if (!printContainer) return;
+
+    const b = (student.branch || '').toLowerCase();
+    const isMain = b === 'phulwari block';
+    const isSecond = b === 'phulwari golambar';
+
+    const mainBranchClass = isMain ? 'text-[#800000] underline' : 'text-[#2B4B7C]';
+    const secondBranchClass = isSecond ? 'text-[#800000] underline' : 'text-[#800000]';
+
+    const photoSrc = student.photoBase64 || '';
+    const photoHtml = photoSrc 
+        ? `<img src="${photoSrc}" class="w-full h-full object-cover" />` 
+        : `<div class="flex items-center justify-center w-full h-full text-center text-[10px] text-slate-500 p-2 border-2 border-slate-200">Paste recent passport size photo</div>`;
+
+    // Helpers to create letter boxes
+    const createBoxes = (str, len) => {
+        let h = '';
+        for (let i = 0; i < len; i++) {
+            const char = (str && str[i] && str[i] !== ' ') ? str[i] : '';
+            h += `<div class="w-[20px] h-[24px] border border-[#2B4B7C] flex items-center justify-center font-black uppercase text-[#2B4B7C]">${char}</div>`;
+        }
+        return h;
+    };
+
+    const createDigitBoxes = (str, len) => {
+        const digits = (str || '').replace(/\\D/g, '');
+        let h = '';
+        for (let i = 0; i < len; i++) {
+            const char = (digits && digits[i]) ? digits[i] : '';
+            h += `<div class="w-[20px] h-[24px] border border-[#2B4B7C] flex items-center justify-center font-black uppercase text-[#2B4B7C]">${char}</div>`;
+        }
+        return h;
+    };
+
+    // Admission HTML
+    printContainer.innerHTML = `
+        <div class="border-[3px] border-[#2B4B7C] p-4 text-[#2B4B7C] relative min-h-[290mm] bg-white">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-4">
+                <!-- Logo side -->
+                <div class="w-[150px]">
+                    <img src="logo black academe.png" onerror="this.src='logo1.png'" alt="VT Academe" class="w-full h-auto">
+                    <div class="text-[10px] font-bold text-center mt-1 text-[#D4AF37] uppercase">ADM NO: ${student.admissionNo || ''}</div>
+                </div>
+
+                <!-- Center text -->
+                <div class="flex-1 text-center px-2">
+                    <div class="flex justify-center gap-3 text-xs font-bold text-[#800000] mb-1">
+                        <span>Mob.: 8083832058, 7044536503</span>
+                        <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> www.vtacademe.com</span>
+                    </div>
+                    <h2 class="text-xl font-black underline mb-2 uppercase">Admission Form</h2>
+                    
+                    <div class="flex justify-center items-start gap-4 mb-1">
+                        <div class="text-center w-[160px]">
+                            <h3 class="text-lg font-black ${mainBranchClass}">MAIN BRANCH</h3>
+                            <p class="text-[8px] text-slate-800 font-semibold leading-tight mt-0.5">Opposite phulwari block gate</p>
+                        </div>
+                        <div class="w-px h-10 bg-slate-400 mt-1"></div>
+                        <div class="text-center w-[160px]">
+                            <h3 class="text-lg font-black ${secondBranchClass}">SECOND BRANCH</h3>
+                            <p class="text-[8px] text-slate-800 font-semibold leading-tight mt-0.5">2nd floor above motichoor building beside Fashion up mall , phulwari sharif golambar pin 801505</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm font-black text-[#1A365D] mt-2">
+                        Registration Fee 500/-
+                    </div>
+                </div>
+
+                <!-- Photo Box -->
+                <div class="w-[100px] h-[125px] border-2 border-[#800000] shrink-0 bg-white">
+                    ${photoHtml}
+                </div>
+            </div>
+
+            <div class="w-full h-0.5 bg-[#008080] mb-3"></div>
+
+            <!-- Instructions -->
+            <div class="space-y-1 mb-5 text-[11px] font-bold text-[#800000]">
+                <div class="flex items-start gap-2">
+                    <span class="text-base leading-none">★</span> 
+                    <span>Use Blue/Black Ball Point Pen to fill this form in CAPITAL Letters.</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-base leading-none">★</span> 
+                    <span>Please Tick as ☑</span>
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="space-y-4 text-[11px] font-bold text-black">
+                
+                <!-- Student Name -->
+                <div class="flex items-start gap-2">
+                    <div class="w-[140px] flex items-center gap-2 shrink-0 text-[#800000]">
+                        <span class="text-base leading-none">★</span> Student's Name :
+                    </div>
+                    <div class="flex-1 flex flex-wrap gap-[2px]">
+                        ${createBoxes(student.name, 25)}
+                    </div>
+                </div>
+
+                <!-- Father's Name -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-[140px] flex items-start gap-2 shrink-0 text-[#800000]">
+                        <span class="text-base leading-none">★</span> Father's / <br>&nbsp;&nbsp;&nbsp;Guardian's Name :
+                    </div>
+                    <div class="flex-1 flex flex-wrap gap-[2px]">
+                        ${createBoxes(student.fatherName, 25)}
+                    </div>
+                </div>
+
+                <!-- DOB & Gender -->
+                <div class="flex items-center gap-4 mt-5 pl-5">
+                    <div class="w-[120px]">Date of Birth <span class="float-right">:</span></div>
+                    <div class="flex gap-[2px]">
+                        ${createBoxes('', 2)} <div class="w-3 text-center">-</div>
+                        ${createBoxes('', 2)} <div class="w-3 text-center">-</div>
+                        ${createBoxes('', 4)}
+                    </div>
+                    
+                    <div class="ml-auto flex items-center gap-2">
+                        <div>Gender :</div>
+                        <div class="w-[80px] h-[24px] border border-[#2B4B7C] px-2 flex items-center uppercase font-black text-[#2B4B7C]">${student.gender || ''}</div>
+                    </div>
+                </div>
+
+                <!-- Mobile No -->
+                <div class="flex items-center gap-2 mt-5">
+                    <div class="w-[140px] flex items-center gap-2 shrink-0 text-[#800000]">
+                        <span class="text-base leading-none">★</span> Mobile No. :
+                    </div>
+                    <div class="flex gap-[2px]">
+                        ${createDigitBoxes(student.phone, 10)}
+                    </div>
+                    
+                    <div class="ml-auto flex items-center gap-2">
+                        <div class="text-[#800000]"><span class="text-base leading-none">★</span> Parent's / Guardian's Mobile No.</div>
+                    </div>
+                </div>
+                
+                <!-- Parent Mobile Boxes & Aadhar & Board -->
+                <div class="flex items-center gap-2 mt-1.5">
+                    <div class="w-[140px] pl-5">Aadhar No. <span class="float-right">:</span></div>
+                    <div class="flex gap-[2px]">
+                        ${createDigitBoxes('', 12)}
+                    </div>
+                    
+                    <div class="ml-auto flex gap-1 items-center">
+                        <div class="mr-1">Board:</div>
+                        <div class="w-[100px] h-[24px] border border-[#2B4B7C] px-2 flex items-center uppercase text-[#2B4B7C] font-black">${student.board || ''}</div>
+                    </div>
+                </div>
+                
+                <!-- School & Address -->
+                <div class="flex items-center gap-2 mt-5">
+                    <div class="w-[140px] flex items-start gap-2 shrink-0 text-[#800000]">
+                        <span class="text-base leading-none mt-0.5">★</span> <div>Name of School/<br>College</div>
+                    </div>
+                    <div class="flex-1 h-[24px] border border-[#2B4B7C] px-2 uppercase flex items-center text-[#2B4B7C]">
+                        
+                    </div>
+                </div>
+
+                <div class="flex items-end gap-2 mt-3 pl-5">
+                    <div class="w-[120px]">Present Address</div>
+                    <div class="flex-1 border-b-[1.5px] border-dotted border-black min-h-[20px] uppercase text-[#2B4B7C] flex items-end pb-0.5 whitespace-nowrap overflow-hidden">
+                        ${student.address || ''}
+                    </div>
+                </div>
+                <div class="flex items-end gap-2 mt-3 pl-5">
+                    <div class="w-full border-b-[1.5px] border-dotted border-black min-h-[20px]"></div>
+                </div>
+
+                <!-- Medium -->
+                <div class="flex items-center gap-4 mt-5 pl-5">
+                    <div class="ml-auto flex items-center gap-2 border border-black px-2 py-1 bg-slate-50">
+                        <span class="font-bold">Medium :</span>
+                        <span>Hindi</span><div class="w-[16px] h-[16px] border border-[#2B4B7C] bg-white flex items-center justify-center"></div>
+                        <span class="ml-1">English</span><div class="w-[16px] h-[16px] border border-[#2B4B7C] bg-white flex items-center justify-center"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note Text -->
+            <div class="mt-8 text-[9px] text-center font-bold px-4 leading-tight">
+                (Note 1: It is the responsibility of guardians to pick and drop their wards at coaching premises. 2: If misbehaviour is found toward the student they can be eliminated. 3: There is no responsibility of the students outside the coachong premises)
+            </div>
+
+            <!-- Signatures and Bottom section -->
+            <div class="mt-10 flex justify-between px-4 pb-4">
+                <div class="text-center w-[180px]">
+                    <div class="border-t border-black pt-1 mb-5 text-[11px] font-bold">Signature of student</div>
+                    
+                    <div class="flex items-end gap-2 mb-3 text-left">
+                        <span class="text-[#2B4B7C] text-[11px] font-bold">Form No...............</span>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3 text-left">
+                        <span class="text-[#2B4B7C] text-[11px] font-bold">Batch</span>
+                        <div class="w-[80px] h-[24px] border border-[#2B4B7C] ml-4 uppercase text-[11px] flex items-center px-1 font-black text-[#2B4B7C]">${student.batch || student.course || ''}</div>
+                    </div>
+                    <div class="flex items-center gap-2 text-left">
+                        <span class="text-[#2B4B7C] text-[11px] font-bold">Admission No.</span>
+                        <div class="w-[80px] h-[24px] border border-[#2B4B7C] uppercase text-[11px] flex items-center px-1 font-black text-[#2B4B7C]">${student.admissionNo || ''}</div>
+                    </div>
+                </div>
+
+                <div class="text-center w-[180px] flex flex-col items-center">
+                    <div class="border-t border-black pt-1 mb-1 w-[80%] text-[11px] font-bold">Signature of Father/Guardian</div>
+                    <div class="text-[#800000] text-[11px] font-bold mt-1">*FOR OFFICE USE ONLY*</div>
+                    
+                    <div class="flex items-center gap-2 mt-6 w-full text-left">
+                        <span class="text-[#2B4B7C] text-[11px] font-bold w-[70px]">Class</span>
+                        <div class="flex-1 h-[24px] border border-[#2B4B7C] uppercase text-[11px] flex items-center px-1 font-black text-[#2B4B7C]">${student.course || ''}</div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-3 w-full text-left">
+                        <span class="text-[#2B4B7C] text-[11px] font-bold w-[70px]">SUBJECT</span>
+                        <div class="flex-1 border-b-[1.5px] border-dotted border-[#2B4B7C] min-h-[18px] uppercase text-[11px] flex items-end font-black text-[#2B4B7C]">${student.std || ''}</div>
+                    </div>
+                </div>
+
+                <div class="text-center w-[180px]">
+                    <div class="border-t border-black pt-1 mb-5 text-[11px] font-bold">Signature of Receiver</div>
+                    <div class="text-left text-[#2B4B7C] text-[11px] font-bold">
+                        Date: .........................
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-0 left-4 right-4 border-b-[3px] border-dotted border-slate-400"></div>
+        </div>
+    `;
+
+    // Wait for dynamic DOM changes then print
+    setTimeout(() => {
+        window.print();
+    }, 300);
 };

@@ -94,6 +94,30 @@
             .student-picker-item .sp-badge { display: none; }
             .student-picker-item { padding: 8px 10px; gap: 10px; }
         }
+
+        /* Print Styles for Admission Form */
+        @media print {
+            body { background-color: white !important; }
+            body > *:not(#printContainer) { display: none !important; }
+            #printContainer {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased overflow-hidden h-screen flex">
@@ -471,7 +495,12 @@
                                 <div class="md:col-span-2">
                                     <div class="flex items-center justify-between mb-3">
                                         <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Leaderboard</h3>
-                                        <span id="scoreboardTestTitle" class="text-sm font-black text-[#0B2447] uppercase tracking-wide"></span>
+                                        <div class="flex items-center gap-3">
+                                            <span id="scoreboardTestTitle" class="text-sm font-black text-[#0B2447] uppercase tracking-wide"></span>
+                                            <button id="adminPrintScoreboardBtn" onclick="window.printAdminScoreboard()" style="display: none;" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold shadow-md hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+                                                <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print
+                                            </button>
+                                        </div>
                                     </div>
                                     <div id="scoreboardLeaderboard" class="max-h-[500px] overflow-y-auto custom-scroll">
                                         <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
@@ -1060,6 +1089,10 @@
                 </form>
             </div>
         </div>
+    </div>
+
+    <!-- PRINT CONTAINER -->
+    <div id="printContainer" class="hidden font-sans text-black bg-white w-full max-w-[210mm] mx-auto p-4 box-border relative">
     </div>
 
     <!-- Scripts -->
