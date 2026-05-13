@@ -386,32 +386,61 @@
                     window.removeEventListener('focus', focusHandler);
                 };
 
-                // Anti-screenshot blur
-                const blurHandler = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'blur(20px)'; };
-                const focusHandler = () => { if(document.getElementById('pdf-viewer-overlay')) document.getElementById('pdf-viewer-overlay').style.filter = 'none'; };
-                window.addEventListener('blur', blurHandler);
-                window.addEventListener('focus', focusHandler);
+                // Anti-screenshot protection
+                const pdfContainerEl = document.getElementById('pdf-container');
+                const hideContent = () => { if(pdfContainerEl) pdfContainerEl.style.opacity = '0'; };
+                const showContent = () => { if(pdfContainerEl) pdfContainerEl.style.opacity = '1'; };
+                
+                window.addEventListener('blur', hideContent);
+                window.addEventListener('focus', showContent);
+                document.addEventListener('mouseleave', hideContent);
+                document.addEventListener('mouseenter', showContent);
 
-                // Block keyboard shortcuts (Ctrl+S, Ctrl+P, PrintScreen)
+                // Block keyboard shortcuts (Ctrl+S, Ctrl+P, PrintScreen, Win+Shift+S)
                 const keyHandler = (e) => {
-                    if ((e.ctrlKey && (e.key === 's' || e.key === 'p')) || e.key === 'PrintScreen') {
+                    if (e.key === 'PrintScreen') {
+                        navigator.clipboard.writeText('Screenshots disabled');
+                        hideContent();
+                        setTimeout(showContent, 2000);
+                    }
+                    if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
                         e.preventDefault();
                         return false;
                     }
                 };
                 document.addEventListener('keydown', keyHandler);
+                document.addEventListener('keyup', keyHandler);
 
                 // Cloudinary page-by-page image rendering
                 const container = document.getElementById('pdf-container');
                 const loading = document.getElementById('pdf-loading');
                 const pageCounter = document.getElementById('page-counter');
 
+                let currentPage = 1;
+                let totalPages = '?';
+                const updateCounter = () => {
+                    pageCounter.textContent = `${currentPage} / ${totalPages}`;
+                };
+                updateCounter();
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
+                            const pageNum = parseInt(entry.target.dataset.pageNum);
+                            if (pageNum) {
+                                currentPage = pageNum;
+                                updateCounter();
+                            }
+                        }
+                    });
+                }, {
+                    root: container,
+                    threshold: 0.3
+                });
+
                 // Convert Cloudinary PDF URL to page image URL
-                // URL format: .../image/upload/v123/folder/file.pdf
-                // Page image: .../image/upload/pg_N,w_1200,f_auto,q_auto/v123/folder/file.pdf
                 const urlParts = content.split('/upload/');
                 if (urlParts.length === 2) {
-                    let pageNum = 1;
                     let loadedCount = 0;
                     const maxPages = 200; // safety limit
 
@@ -426,8 +455,9 @@
                             if (loading && loading.parentNode) loading.remove();
                             
                             const wrapper = document.createElement('div');
-                            wrapper.className = 'relative max-w-[900px] w-full';
+                            wrapper.className = 'relative max-w-[900px] w-full mb-4';
                             wrapper.style.animation = 'fadeIn 0.4s ease-out';
+                            wrapper.dataset.pageNum = num;
                             
                             img.className = 'w-full h-auto rounded-lg shadow-[0_4px_30px_rgba(0,0,0,0.4)] select-none';
                             img.style.cssText = 'pointer-events: none; -webkit-user-drag: none; user-select: none;';
@@ -435,8 +465,14 @@
                             wrapper.appendChild(img);
                             container.appendChild(wrapper);
                             
+                            observer.observe(wrapper);
+                            
                             loadedCount++;
-                            pageCounter.textContent = `${loadedCount} pages`;
+                            if (totalPages !== '?') {
+                                updateCounter();
+                            } else {
+                                pageCounter.textContent = `Loading... (${loadedCount})`;
+                            }
                             
                             // Load next page
                             if (num < maxPages) {
@@ -447,15 +483,26 @@
                         img.onerror = () => {
                             // No more pages — done loading
                             if (loading && loading.parentNode) loading.remove();
+                            
                             if (loadedCount === 0) {
                                 container.innerHTML = `<p class="text-red-400 font-bold text-center my-auto">Could not load this PDF. Please try again.</p>`;
+                                pageCounter.textContent = 'Error';
+                            } else {
+                                totalPages = loadedCount;
+                                updateCounter();
                             }
+                            
                             // Clean up keyboard handler when viewer is closed
                             const closeBtn = document.getElementById('close-viewer-btn');
                             if (closeBtn) {
                                 const origClick = closeBtn.onclick;
                                 closeBtn.onclick = () => {
                                     document.removeEventListener('keydown', keyHandler);
+                                    document.removeEventListener('keyup', keyHandler);
+                                    window.removeEventListener('blur', hideContent);
+                                    window.removeEventListener('focus', showContent);
+                                    document.removeEventListener('mouseleave', hideContent);
+                                    document.removeEventListener('mouseenter', showContent);
                                     if (origClick) origClick();
                                 };
                             }

@@ -2409,6 +2409,9 @@ window.printForm = (id) => {
                     
                     <div class="ml-auto flex items-center gap-2">
                         <div class="text-[#800000]"><span class="text-base leading-none">★</span> Parent's / Guardian's Mobile No.</div>
+                        <div class="flex gap-[2px]">
+                            ${createDigitBoxes(student.parentMobile, 10)}
+                        </div>
                     </div>
                 </div>
                 
