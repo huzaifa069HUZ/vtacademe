@@ -2635,8 +2635,8 @@ window.printSelectedIDCards = function() {
         const admId = student.admissionNo || student.id.slice(0,6).toUpperCase();
 
         html += `
-<div style="width: 175px; height: 346px; overflow: hidden; break-inside: avoid; background: transparent;">
-    <div style="transform: scale(0.54); transform-origin: top left; width: 320px; height: 640px;">
+<div style="width: 54mm; height: 108mm; overflow: hidden; break-inside: avoid; background: transparent;">
+    <div style="transform: scale(0.6375); transform-origin: top left; width: 320px; height: 640px;">
         <div class="id-card" style="width: 320px; height: 640px; border-radius: 16px; position: relative; overflow: hidden; font-family: 'Outfit', sans-serif; background: #fff; border: 1px solid #e5e7eb; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: inline-block;">
     <!-- Dotted Backgrounds -->
     <div style="position: absolute; left: 0; top: 0; width: 40px; height: 100%; background-image: radial-gradient(#f97316 1.5px, transparent 1.5px); background-size: 8px 8px; opacity: 0.25;"></div>
