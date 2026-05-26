@@ -2716,16 +2716,13 @@ window.printSelectedIDCards = function() {
         </div>
     </div>
 
-    <!-- Bottom Wave & Footers -->
-    <svg style="position: absolute; bottom: 18px; left: 0; width: 100%; height: auto; z-index: 1;" viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 80H320V30C250 50 200 10 150 20C100 30 50 0 0 20V80Z" fill="#6b7280"/>
-    </svg>
-    <div style="position: absolute; bottom: 18px; left: 0; width: 100%; height: 35px; background: #6b7280; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;">
-        <svg style="width: 14px; height: 14px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-        <span style="color: white; font-size: 12px; font-weight: 600;">www.vtacademe.com</span>
+    <!-- Bottom Bar & Footers (flat design, no wave) -->
+    <div style="position: absolute; bottom: 20px; left: 0; width: 100%; height: 36px; background: #9ca3af; border-radius: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg style="width: 16px; height: 16px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+        <span style="color: white; font-size: 12px; font-weight: 700;">www.vtacademe.com</span>
     </div>
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 18px; background: #4b5563; z-index: 3; display: flex; align-items: center; justify-content: center;">
-        <span style="color: #d1d5db; font-size: 6.5px; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap;">OUR BRANCHES: IN FRONT OF PHULWARI BLOCK GATE  |  PHULWARI GOLAMBAR ABOVE MOTICHOOR</span>
+    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 20px; background: #ea580c; border-radius: 0 0 16px 16px; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: visible;">
+        <span style="color: #ffffff; font-size: 6px; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; text-transform: uppercase;">OUR BRANCHES: IN FRONT OF PHULWARI BLOCK GATE &nbsp;|&nbsp; PHULWARI GOLAMBAR ABOVE MOTICHOOR</span>
     </div>
 </div>
     </div>
