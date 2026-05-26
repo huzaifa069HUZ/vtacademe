@@ -1,0 +1,4 @@
+node_modules/
+temp_puppeteer/node_modules/
+temp_puppeteer/
+.env
