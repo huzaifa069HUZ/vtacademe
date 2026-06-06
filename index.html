@@ -4462,9 +4462,10 @@
             const studentName = document.getElementById('popup-student-name')?.value?.trim();
             const phone = document.getElementById('popup-phone')?.value?.trim();
             const grade = document.getElementById('popup-grade')?.value?.trim();
+            const subject = document.getElementById('popup-subject')?.value?.trim();
             const branch = document.getElementById('popup-branch')?.value?.trim();
 
-            if (!studentName || !phone || !grade || !branch) {
+            if (!studentName || !phone || !grade || !branch || !subject) {
                 window.showToast('error', 'Please fill in all required fields.');
                 return;
             }
@@ -4478,6 +4479,7 @@
                     studentName,
                     parentName: 'N/A', // Not asked in popup
                     grade,
+                    subject,
                     branch,
                     phone,
                     email: '', // Not asked in popup
@@ -4490,7 +4492,7 @@
                 fetch('/api/send-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ formType: 'inquiry', studentName, parentName: 'N/A', grade, branch, phone, email: '' })
+                    body: JSON.stringify({ formType: 'inquiry', studentName, parentName: 'N/A', grade, subject, branch, phone, email: '' })
                 }).catch(e => console.error("Email API Error:", e));
 
                 window.closeInquiryPopup();
@@ -4692,6 +4694,18 @@
                             <option value="Class 10">Class 10</option>
                             <option value="Class 11">Class 11</option>
                             <option value="Class 12">Class 12</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <select id="popup-subject" required
+                            class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F97316] focus:bg-white transition-colors text-gray-600">
+                            <option value="">Select Subject *</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Maths">Maths</option>
+                            <option value="Bio">Bio</option>
+                            <option value="School Syllabus">School Syllabus</option>
                         </select>
                     </div>
 

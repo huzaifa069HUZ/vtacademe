@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-document.addEventListener("DOMContentLoaded", () => {
+const initApp = () => {
     const photoInput = document.getElementById("photo");
     const photoPreview = document.getElementById("photoPreview");
     const photoStatusText = document.getElementById("photoStatusText");
@@ -108,59 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Custom Subject Multi-Select Logic
-    const subjectSelector = document.getElementById('subject-selector');
-    const subjectMenu = document.getElementById('subject-menu');
-    const subjectCheckboxes = document.querySelectorAll('.subject-cb');
-    const stdInput = document.getElementById('std');
-    const subjectTags = document.getElementById('subject-tags');
-    const subjectPlaceholder = document.getElementById('subject-placeholder');
-    const subjectChevron = document.getElementById('subject-chevron');
-    const subjectWrapper = document.getElementById('subject-dropdown-wrapper');
 
-    if (subjectSelector && subjectMenu) {
-        subjectSelector.addEventListener('click', () => {
-            const isHidden = subjectMenu.classList.contains('hidden');
-            if (isHidden) {
-                subjectMenu.classList.remove('hidden');
-                setTimeout(() => {
-                    subjectMenu.classList.remove('opacity-0', 'translate-y-[-10px]');
-                    subjectChevron.classList.add('rotate-180');
-                }, 10);
-            } else {
-                subjectMenu.classList.add('opacity-0', 'translate-y-[-10px]');
-                subjectChevron.classList.remove('rotate-180');
-                setTimeout(() => subjectMenu.classList.add('hidden'), 200);
-            }
-        });
 
-        document.addEventListener('click', (e) => {
-            if (!subjectWrapper.contains(e.target) && !subjectMenu.classList.contains('hidden')) {
-                subjectMenu.classList.add('opacity-0', 'translate-y-[-10px]');
-                subjectChevron.classList.remove('rotate-180');
-                setTimeout(() => subjectMenu.classList.add('hidden'), 200);
-            }
-        });
 
-        function updateSubjectTags() {
-            const selected = Array.from(subjectCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
-            stdInput.value = selected.join(', ');
-            
-            if (selected.length > 0) {
-                subjectPlaceholder.classList.add('hidden');
-                subjectTags.classList.remove('hidden');
-                subjectTags.innerHTML = selected.map(val => 
-                    `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-[#0B2447] text-white border border-[#0B2447]/20 shadow-sm">${val}</span>`
-                ).join('');
-            } else {
-                subjectPlaceholder.classList.remove('hidden');
-                subjectTags.classList.add('hidden');
-                subjectTags.innerHTML = '';
-            }
-        }
-
-        subjectCheckboxes.forEach(cb => {
-            cb.addEventListener('change', updateSubjectTags);
-        });
-    }
-});
+};
+initApp();

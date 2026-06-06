@@ -193,7 +193,7 @@
             <div class="flex h-24 items-center justify-between">
                 <a href="index.html" class="flex items-center gap-4 group">
                     <img class="h-12 md:h-14 lg:h-16 w-auto object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
-                        src="logo-with-text.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo">
+                        src="logo%20black%20academe.png" alt="VT Academe (VT Academy) Coaching Institute Patna Logo">
                 </a>
                 <div class="flex gap-4 items-center overflow-x-auto no-scrollbar">
                     <a href="about.html" class="hidden md:flex items-center gap-2 text-sm font-bold text-[#0B2447] hover:text-[#3B82F6] transition-colors px-2 py-2">
@@ -383,62 +383,78 @@
                         </div>
 
                         <!-- Subject -->
-                        <div class="relative group" id="subject-dropdown-wrapper">
+                        <div class="relative group" id="subject-dropdown-wrapper" style="z-index: 50;">
                             <label class="block text-sm font-bold text-[#0B2447] mb-2.5 ml-1">Subject <span class="text-red-500">*</span></label>
-                            
                             <!-- Custom Dropdown Container -->
-                            <div class="relative">
+                            <div class="relative" id="custom-subject-select">
                                 <!-- Hidden input for form submission -->
                                 <input type="hidden" id="std" name="std" required>
                                 
                                 <!-- Select Button / Tag Container -->
-                                <div id="subject-selector" tabindex="0" class="glass-input w-full min-h-[58px] px-5 py-3 rounded-[1.25rem] text-gray-800 bg-white flex flex-wrap gap-2 items-center cursor-pointer font-medium shadow-sm border border-transparent focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 transition-all outline-none">
-                                    <span id="subject-placeholder" class="text-gray-400">Select Subjects</span>
-                                    <div id="subject-tags" class="flex flex-wrap gap-1.5 w-full hidden"></div>
+                                <div id="subject-selector" tabindex="0" class="glass-input w-full min-h-[58px] px-4 py-3 rounded-[1.25rem] text-gray-800 bg-white flex flex-wrap gap-2 items-center cursor-pointer shadow-sm border-2 border-transparent focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/10 transition-all outline-none group">
+                                    
+                                    <span id="subject-placeholder" class="text-gray-400 font-medium ml-1">Choose subjects...</span>
+                                    
+                                    <div id="subject-tags" class="flex flex-wrap gap-2 w-full hidden pointer-events-none"></div>
+                                    
                                     <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 transition-transform duration-300" id="subject-chevron">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg class="w-5 h-5 group-hover:text-[#F97316] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
                                 
                                 <!-- Dropdown List -->
-                                <div id="subject-menu" class="absolute z-20 w-full mt-2 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-[1.25rem] shadow-xl overflow-hidden hidden transform origin-top transition-all duration-200 opacity-0 translate-y-[-10px]">
-                                    <div class="p-2 space-y-1">
-                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-blue-50/80 cursor-pointer transition-colors group">
-                                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
-                                                <input type="checkbox" value="Physics" class="subject-cb peer appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
-                                                <svg class="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                <div id="subject-menu" class="absolute z-50 w-full mt-2 bg-white rounded-[1.25rem] shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden hidden transform origin-top transition-all duration-200 opacity-0 scale-95 pointer-events-none">
+                                    <div class="p-3 space-y-1 max-h-[250px] overflow-y-auto custom-scrollbar">
+                                        <!-- MATHS -->
+                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 cursor-pointer transition-colors group/item">
+                                            <div class="relative flex items-center justify-center w-6 h-6 mr-4">
+                                                <input type="checkbox" value="MATHS" class="subject-cb peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-[6px] checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
+                                                <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity transform scale-50 peer-checked:scale-100 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                             </div>
-                                            <span class="text-sm font-bold text-gray-700 group-hover:text-[#0B2447] transition-colors">Physics</span>
+                                            <span class="text-[15px] font-bold text-gray-700 group-hover/item:text-[#F97316] transition-colors">MATHS</span>
                                         </label>
                                         
-                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-blue-50/80 cursor-pointer transition-colors group">
-                                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
-                                                <input type="checkbox" value="Chemistry" class="subject-cb peer appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
-                                                <svg class="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        <!-- PHYSICS -->
+                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 cursor-pointer transition-colors group/item">
+                                            <div class="relative flex items-center justify-center w-6 h-6 mr-4">
+                                                <input type="checkbox" value="PHYSICS" class="subject-cb peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-[6px] checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
+                                                <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity transform scale-50 peer-checked:scale-100 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                             </div>
-                                            <span class="text-sm font-bold text-gray-700 group-hover:text-[#0B2447] transition-colors">Chemistry</span>
+                                            <span class="text-[15px] font-bold text-gray-700 group-hover/item:text-[#F97316] transition-colors">PHYSICS</span>
                                         </label>
 
-                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-blue-50/80 cursor-pointer transition-colors group">
-                                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
-                                                <input type="checkbox" value="Maths" class="subject-cb peer appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
-                                                <svg class="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        <!-- CHEMISTRY -->
+                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 cursor-pointer transition-colors group/item">
+                                            <div class="relative flex items-center justify-center w-6 h-6 mr-4">
+                                                <input type="checkbox" value="CHEMISTRY" class="subject-cb peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-[6px] checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
+                                                <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity transform scale-50 peer-checked:scale-100 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                             </div>
-                                            <span class="text-sm font-bold text-gray-700 group-hover:text-[#0B2447] transition-colors">Maths</span>
+                                            <span class="text-[15px] font-bold text-gray-700 group-hover/item:text-[#F97316] transition-colors">CHEMISTRY</span>
                                         </label>
 
-                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-blue-50/80 cursor-pointer transition-colors group">
-                                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
-                                                <input type="checkbox" value="Bio" class="subject-cb peer appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
-                                                <svg class="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        <!-- BIO -->
+                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 cursor-pointer transition-colors group/item">
+                                            <div class="relative flex items-center justify-center w-6 h-6 mr-4">
+                                                <input type="checkbox" value="BIO" class="subject-cb peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-[6px] checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
+                                                <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity transform scale-50 peer-checked:scale-100 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                             </div>
-                                            <span class="text-sm font-bold text-gray-700 group-hover:text-[#0B2447] transition-colors">Bio</span>
+                                            <span class="text-[15px] font-bold text-gray-700 group-hover/item:text-[#F97316] transition-colors">BIO</span>
                                         </label>
+
+                                        <!-- SCHOOL SYLLABUS -->
+                                        <label class="flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 cursor-pointer transition-colors group/item">
+                                            <div class="relative flex items-center justify-center w-6 h-6 mr-4">
+                                                <input type="checkbox" value="SCHOOL SYLLABUS" class="subject-cb peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-[6px] checked:bg-[#F97316] checked:border-[#F97316] transition-all cursor-pointer">
+                                                <svg class="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity transform scale-50 peer-checked:scale-100 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <span class="text-[15px] font-bold text-gray-700 group-hover/item:text-[#F97316] transition-colors">SCHOOL SYLLABUS</span>
+                                        </label>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 border-t border-gray-100 text-center cursor-pointer hover:bg-gray-100 transition-colors" id="subject-done-btn">
+                                        <span class="text-sm font-bold text-[#F97316] block py-1 w-full text-center">DONE</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
                         <!-- Educational Board -->
                         <div class="relative group">
                             <label class="block text-sm font-bold text-[#0B2447] mb-2.5 ml-1" for="board">Educational Board <span class="text-red-500">*</span></label>
@@ -483,6 +499,18 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Last School (Optional) -->
+                        <div class="relative group">
+                            <label class="block text-sm font-bold text-[#0B2447] mb-2.5 ml-1" for="lastSchool">Last School</label>
+                            <input type="text" id="lastSchool" class="glass-input w-full px-5 py-4 rounded-[1.25rem] text-gray-800 placeholder-gray-400 focus:outline-none font-medium shadow-sm" placeholder="e.g. DPS Patna">
+                        </div>
+
+                        <!-- Percentage in Last Class (Optional) -->
+                        <div class="relative group">
+                            <label class="block text-sm font-bold text-[#0B2447] mb-2.5 ml-1" for="lastPercentage">Percentage in Last Class</label>
+                            <input type="text" id="lastPercentage" class="glass-input w-full px-5 py-4 rounded-[1.25rem] text-gray-800 placeholder-gray-400 focus:outline-none font-medium shadow-sm" placeholder="e.g. 85%">
                         </div>
 
                         <!-- Address -->
@@ -692,7 +720,88 @@
             }
         }
     </style>
-    <script type="module" src="admission-script.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const subjectSelector = document.getElementById('subject-selector');
+            const subjectMenu = document.getElementById('subject-menu');
+            const subjectCheckboxes = document.querySelectorAll('.subject-cb');
+            const stdInput = document.getElementById('std');
+            const subjectTags = document.getElementById('subject-tags');
+            const subjectPlaceholder = document.getElementById('subject-placeholder');
+            const subjectChevron = document.getElementById('subject-chevron');
+            const subjectWrapper = document.getElementById('custom-subject-select');
+            const subjectDoneBtn = document.getElementById('subject-done-btn');
+
+            if (subjectSelector && subjectMenu) {
+                // Toggle dropdown on click
+                subjectSelector.addEventListener('click', (e) => {
+                    if(e.target.closest('svg') && e.target.closest('#subject-tags')) return;
+                    
+                    const isHidden = subjectMenu.classList.contains('hidden');
+                    if (isHidden) {
+                        subjectMenu.classList.remove('hidden');
+                        setTimeout(() => {
+                            subjectMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                            subjectChevron.classList.add('rotate-180');
+                            subjectSelector.classList.add('border-[#F97316]', 'ring-4', 'ring-[#F97316]/10');
+                            subjectSelector.classList.remove('border-transparent');
+                        }, 10);
+                    } else {
+                        closeSubjectDropdown();
+                    }
+                });
+
+                function closeSubjectDropdown() {
+                    subjectMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                    subjectChevron.classList.remove('rotate-180');
+                    subjectSelector.classList.remove('border-[#F97316]', 'ring-4', 'ring-[#F97316]/10');
+                    subjectSelector.classList.add('border-transparent');
+                    setTimeout(() => subjectMenu.classList.add('hidden'), 200);
+                }
+
+                // Close on clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!subjectWrapper.contains(e.target) && !subjectMenu.classList.contains('hidden')) {
+                        closeSubjectDropdown();
+                    }
+                });
+
+                // Close when clicking DONE
+                if(subjectDoneBtn) {
+                    subjectDoneBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        closeSubjectDropdown();
+                    });
+                }
+
+                // Update tags and hidden input
+                function updateSubjectTags() {
+                    const selected = Array.from(subjectCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+                    if(stdInput) stdInput.value = selected.join(', ');
+                    
+                    if (selected.length > 0) {
+                        subjectPlaceholder.classList.add('hidden');
+                        subjectTags.classList.remove('hidden');
+                        subjectTags.innerHTML = selected.map(val => 
+                            `<span class="inline-flex items-center px-3 py-1.5 rounded-[8px] text-xs font-bold bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20 shadow-sm">${val}</span>`
+                        ).join('');
+                    } else {
+                        subjectPlaceholder.classList.remove('hidden');
+                        subjectTags.classList.add('hidden');
+                        subjectTags.innerHTML = '';
+                    }
+                }
+
+                // Add listeners to checkboxes
+                subjectCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSubjectTags);
+                });
+            }
+        });
+    </script>
+
+    <script type="module" src="admission-script.js?v=5"></script>
 </body>
 
 </html>
