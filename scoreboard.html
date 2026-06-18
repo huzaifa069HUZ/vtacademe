@@ -164,14 +164,24 @@
                     allEntries.push({ id: doc.id, ...data });
                     const name = data.testName || 'Untitled';
                     if (!testMap[name]) {
-                        testMap[name] = { count: 0, date: data.date || '' };
+                        testMap[name] = { count: 0, date: data.date || '', createdAt: data.createdAt ? data.createdAt.seconds : 0 };
+                    } else {
+                        const dataSec = data.createdAt ? data.createdAt.seconds : 0;
+                        if (dataSec > testMap[name].createdAt) {
+                            testMap[name].createdAt = dataSec;
+                        }
                     }
                     testMap[name].count++;
                 });
 
                 loader.classList.add('hidden');
 
-                const testNames = Object.keys(testMap).sort();
+                const testNames = Object.keys(testMap).sort((a, b) => {
+                    const dateA = new Date(testMap[a].date || 0).getTime();
+                    const dateB = new Date(testMap[b].date || 0).getTime();
+                    if (dateB !== dateA) return dateB - dateA;
+                    return testMap[b].createdAt - testMap[a].createdAt;
+                });
 
                 if (testNames.length === 0) {
                     emptyState.classList.remove('hidden');
@@ -259,19 +269,20 @@
             titleEl.textContent = activeTest;
 
             // Filter entries for this test
-            let entries = allEntries.filter(e => e.testName === activeTest);
+            let entries = allEntries.filter(e => (e.testName || 'Untitled') === activeTest);
 
             // Get unique classes for class filter
             const classes = new Set();
             const subjects = new Set();
             entries.forEach(e => { 
-                if (e.course) classes.add(e.course); 
+                const entryClass = e.testClass || e.course;
+                if (entryClass) classes.add(entryClass); 
                 if (e.subject) subjects.add(e.subject);
             });
 
             // Apply class filter
             if (activeClass !== 'all') {
-                entries = entries.filter(e => e.course === activeClass);
+                entries = entries.filter(e => (e.testClass || e.course) === activeClass);
             }
             
             // Apply subject filter

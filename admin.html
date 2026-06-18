@@ -466,6 +466,13 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-4">
+                                    <div class="relative">
+                                        <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                        <input type="text" id="batchStudentSearch" placeholder="Search student by name or ID..." oninput="window.filterBatchStudents()" class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-sm shadow-sm">
+                                    </div>
+                                </div>
+
                                 <div id="batchStudentsList" class="space-y-2 max-h-[450px] overflow-y-auto custom-scroll pr-1 mb-6">
                                     <!-- Populated by JS -->
                                 </div>

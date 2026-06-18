@@ -1739,13 +1739,24 @@ async function loadScoreboardTests() {
             var data = d.data();
             var name = data.testName || 'Untitled';
             if (!testMap[name]) {
-                testMap[name] = { count: 0, date: data.date || '', courses: new Set() };
+                testMap[name] = { count: 0, date: data.date || '', createdAt: data.createdAt ? data.createdAt.seconds : 0, courses: new Set() };
+            } else {
+                var dataSec = data.createdAt ? data.createdAt.seconds : 0;
+                if (dataSec > testMap[name].createdAt) {
+                    testMap[name].createdAt = dataSec;
+                }
             }
             testMap[name].count++;
             if (data.course) testMap[name].courses.add(data.course);
+            if (data.testClass) testMap[name].courses.add(data.testClass);
         });
 
-        scoreboardTestNames = Object.keys(testMap).sort();
+        scoreboardTestNames = Object.keys(testMap).sort(function(a, b) {
+            var dateA = new Date(testMap[a].date || 0).getTime();
+            var dateB = new Date(testMap[b].date || 0).getTime();
+            if (dateB !== dateA) return dateB - dateA;
+            return testMap[b].createdAt - testMap[a].createdAt;
+        });
 
         if (scoreboardTestNames.length === 0) {
             testListEl.innerHTML = '<div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">' +
@@ -1810,7 +1821,7 @@ window.loadAdminLeaderboard = async function(testName) {
 
         // Filter by class if not 'all'
         if (scoreboardActiveClass !== 'all') {
-            entries = entries.filter(function(e) { return e.course === scoreboardActiveClass; });
+            entries = entries.filter(function(e) { return (e.testClass || e.course) === scoreboardActiveClass; });
         }
 
         // Sort by percentage descending, then by obtained marks descending
@@ -1821,7 +1832,10 @@ window.loadAdminLeaderboard = async function(testName) {
 
         // Build class filter pills
         var allCourses = new Set();
-        snap.forEach(function(d) { if (d.data().course) allCourses.add(d.data().course); });
+        snap.forEach(function(d) { 
+            var cls = d.data().testClass || d.data().course;
+            if (cls) allCourses.add(cls); 
+        });
         var classFilterHtml = '<div class="flex flex-wrap gap-2 mb-6">';
         classFilterHtml += '<button onclick="window.filterScoreboardClass(\'all\')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ' +
             (scoreboardActiveClass === 'all' ? 'bg-[#0B2447] text-white border-[#0B2447]' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300') + '">All Classes</button>';
@@ -2156,11 +2170,14 @@ window.loadBatchStudents = function() {
 };
 
 window.batchToggleAll = function() {
-    const cbs = document.querySelectorAll('.batch-student-cb');
-    if (cbs.length === 0) return;
+    const visibleRows = Array.from(document.querySelectorAll('.batch-student-row')).filter(row => row.style.display !== 'none');
+    if (visibleRows.length === 0) return;
     
-    const allChecked = Array.from(cbs).every(cb => cb.checked);
-    cbs.forEach(cb => cb.checked = !allChecked);
+    const visibleCbs = visibleRows.map(row => row.querySelector('.batch-student-cb')).filter(cb => cb !== null);
+    if (visibleCbs.length === 0) return;
+    
+    const allChecked = visibleCbs.every(cb => cb.checked);
+    visibleCbs.forEach(cb => cb.checked = !allChecked);
     
     const btn = document.getElementById('batchSelectAllBtn');
     btn.textContent = allChecked ? 'Select All' : 'Deselect All';
@@ -2170,6 +2187,20 @@ window.batchToggleAll = function() {
 window.updateBatchSelectedCount = function() {
     const cbs = document.querySelectorAll('.batch-student-cb:checked');
     document.getElementById('batchSelectedCount').textContent = cbs.length + ' selected';
+};
+
+window.filterBatchStudents = function() {
+    const query = (document.getElementById('batchStudentSearch').value || '').toLowerCase();
+    const rows = document.querySelectorAll('.batch-student-row');
+    rows.forEach(row => {
+        const name = (row.dataset.name || '').toLowerCase();
+        const adm = (row.dataset.adm || '').toLowerCase();
+        if (name.includes(query) || adm.includes(query)) {
+            row.style.display = 'flex';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 };
 
 window.publishBatchTest = async function() {
@@ -2634,6 +2665,11 @@ window.printSelectedIDCards = function() {
         const courseStr = student.course || student.std || student.batch || 'N/A';
         const admId = student.admissionNo || student.id.slice(0,6).toUpperCase();
 
+        let displayClass = courseStr.toUpperCase();
+        if (!displayClass.includes('CLASS') && courseStr !== 'N/A') {
+            displayClass = 'CLASS ' + displayClass;
+        }
+
         html += `
 <div style="width: 54mm; height: 86mm; overflow: hidden; break-inside: avoid; background: transparent;">
     <div style="transform: scale(0.6375); transform-origin: top left; width: 320px; height: 510px;">
@@ -2669,7 +2705,7 @@ window.printSelectedIDCards = function() {
 
         <!-- Class Badge -->
         <div style="background: #ea580c; color: #fff; display: inline-block; padding: 3px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);">
-            Class : ${courseStr}
+            ${displayClass}
         </div>
 
         <!-- Details -->
@@ -2722,7 +2758,7 @@ window.printSelectedIDCards = function() {
         <span style="color: white; font-size: 12px; font-weight: 700;">www.vtacademe.com</span>
     </div>
     <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 20px; background: #ea580c; border-radius: 0 0 16px 16px; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: visible;">
-        <span style="color: #ffffff; font-size: 6px; font-weight: 800; letter-spacing: 0.5px; white-space: nowrap; text-transform: uppercase;">OUR BRANCHES: IN FRONT OF PHULWARI BLOCK GATE &nbsp;|&nbsp; PHULWARI GOLAMBAR ABOVE MOTICHOOR</span>
+        <span style="color: #ffffff; font-size: 5.5px; font-weight: 800; letter-spacing: 0px; white-space: nowrap; text-transform: uppercase;">OUR BRANCHES: IN FRONT OF PHULWARI BLOCK GATE &nbsp;|&nbsp; PHULWARI GOLAMBAR ABOVE MOTICHOOR</span>
     </div>
 </div>
     </div>
