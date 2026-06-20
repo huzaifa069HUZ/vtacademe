@@ -256,24 +256,14 @@
                 console.log('[Scoreboard] Fetching data...');
                 const snap = await getDocs(collection(db, 'scoreboard'));
                 console.log('[Scoreboard] Got', snap.size, 'documents');
-                let testMap = processSnapshot(snap);
-
-                // If empty on first try, wait and retry once
-                if (Object.keys(testMap).length === 0) {
-                    console.log('[Scoreboard] Empty result, retrying in 2s...');
-                    await new Promise(r => setTimeout(r, 2000));
-                    const snap2 = await getDocs(collection(db, 'scoreboard'));
-                    console.log('[Scoreboard] Retry got', snap2.size, 'documents');
-                    testMap = processSnapshot(snap2);
-                }
-
+                const testMap = processSnapshot(snap);
                 renderTestPills(testMap);
-
             } catch (error) {
                 console.error("[Scoreboard] Error:", error);
                 loader.classList.add('hidden');
                 container.innerHTML = `<div class="w-full text-center py-20">
                     <div class="text-red-500 font-medium mb-2">Failed to load scoreboard.</div>
+                    <div class="text-xs text-[#546877] mb-4">Error: ${error.message || 'Unknown'}</div>
                     <button onclick="location.reload()" class="px-6 py-2 bg-[#ff771c] text-white rounded-full text-sm font-bold hover:bg-[#e5691a] transition-colors">Try Again</button>
                 </div>`;
             }
