@@ -129,7 +129,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -143,6 +143,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Enable offline persistence so data is cached after first successful load
+        enableIndexedDbPersistence(db).catch((err) => {
+            console.warn('[Scoreboard] Persistence error:', err.code);
+        });
 
         let activeTest = null;
         let activeClass = 'all';
@@ -158,21 +163,15 @@
             if (typeof dateVal === 'string') {
                 const str = dateVal.trim();
                 if (!str) return new Date(0);
-                // Handle DD-MM-YYYY or DD/MM/YYYY format explicitly
                 const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
                 if (dmyMatch) return new Date(parseInt(dmyMatch[3], 10), parseInt(dmyMatch[2], 10) - 1, parseInt(dmyMatch[1], 10));
-                
-                // Fallback to standard parsing, replacing dashes with slashes helps older Safari versions
                 const parsed = new Date(str);
                 if (!isNaN(parsed.getTime())) return parsed;
-                
                 const fallbackParsed = new Date(str.replace(/-/g, '/'));
                 if (!isNaN(fallbackParsed.getTime())) return fallbackParsed;
             }
             return new Date(0);
         }
-
-        let unsubscribe = null;
 
         async function loadScoreboard() {
             const testBar = document.getElementById('test-filter-bar');
@@ -180,19 +179,15 @@
             const container = document.getElementById('scoreboard-container');
             const emptyState = document.getElementById('scoreboard-empty');
 
-            // Helper to process a snapshot into UI
             function processSnapshot(snap) {
                 allEntries = [];
                 const testMap = {};
-
                 snap.forEach((doc) => {
                     const data = doc.data();
                     allEntries.push({ id: doc.id, ...data });
                     const name = data.testName || 'Untitled';
-
                     const getSeconds = (ts) => (ts && typeof ts.seconds === 'number') ? ts.seconds : 0;
                     const entrySecs = getSeconds(data.createdAt);
-
                     if (!testMap[name]) {
                         testMap[name] = { count: 0, date: data.date || '', createdAt: entrySecs };
                     } else {
@@ -202,13 +197,11 @@
                     }
                     testMap[name].count++;
                 });
-
                 return testMap;
             }
 
             function renderTestPills(testMap) {
                 loader.classList.add('hidden');
-
                 const testNames = Object.keys(testMap).sort((a, b) => {
                     const dateA = safeParseDate(testMap[a].date).getTime();
                     const dateB = safeParseDate(testMap[b].date).getTime();
@@ -226,7 +219,6 @@
                 }
 
                 emptyState.classList.add('hidden');
-
                 const urlParams = new URLSearchParams(window.location.search);
                 const preselected = urlParams.get('test');
 
@@ -253,18 +245,39 @@
             }
 
             try {
-                console.log('[Scoreboard] Fetching data...');
-                const snap = await getDocs(collection(db, 'scoreboard'));
-                console.log('[Scoreboard] Got', snap.size, 'documents');
+                // First attempt
+                let snap = await getDocs(collection(db, 'scoreboard'));
+
+                // If 0 docs and data came from cache (server unreachable), retry after a delay
+                if (snap.size === 0 && snap.metadata.fromCache) {
+                    console.log('[Scoreboard] Got 0 docs from cache, server unreachable. Retrying in 3s...');
+                    await new Promise(r => setTimeout(r, 3000));
+                    snap = await getDocs(collection(db, 'scoreboard'));
+                }
+
+                // If still 0 from cache after retry, show connection error with retry button
+                if (snap.size === 0 && snap.metadata.fromCache) {
+                    loader.classList.add('hidden');
+                    container.innerHTML = `<div class="w-full text-center py-20">
+                        <div class="text-4xl mb-4">📡</div>
+                        <div class="text-[#161311] font-bold text-lg mb-2">Connection Issue</div>
+                        <div class="text-sm text-[#546877] mb-6">Could not connect to the server. Please check your internet connection.</div>
+                        <button onclick="location.reload()" class="px-6 py-2.5 bg-[#ff771c] text-white rounded-full text-sm font-bold hover:bg-[#e5691a] transition-colors shadow-md">Try Again</button>
+                    </div>`;
+                    return;
+                }
+
                 const testMap = processSnapshot(snap);
                 renderTestPills(testMap);
+
             } catch (error) {
                 console.error("[Scoreboard] Error:", error);
                 loader.classList.add('hidden');
                 container.innerHTML = `<div class="w-full text-center py-20">
+                    <div class="text-4xl mb-4">⚠️</div>
                     <div class="text-red-500 font-medium mb-2">Failed to load scoreboard.</div>
-                    <div class="text-xs text-[#546877] mb-4">Error: ${error.message || 'Unknown'}</div>
-                    <button onclick="location.reload()" class="px-6 py-2 bg-[#ff771c] text-white rounded-full text-sm font-bold hover:bg-[#e5691a] transition-colors">Try Again</button>
+                    <div class="text-xs text-[#546877] mb-4">${error.message || 'Unknown error'}</div>
+                    <button onclick="location.reload()" class="px-6 py-2.5 bg-[#ff771c] text-white rounded-full text-sm font-bold hover:bg-[#e5691a] transition-colors shadow-md">Try Again</button>
                 </div>`;
             }
         }

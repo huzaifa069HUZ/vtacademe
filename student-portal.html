@@ -378,7 +378,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, getDoc, query, where, doc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, getDoc, query, where, doc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -392,6 +392,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        enableIndexedDbPersistence(db).catch((err) => {
+            console.warn('[Portal] Persistence error:', err.code);
+        });
 
         const inputEl = document.getElementById('admission-input');
         inputEl.addEventListener('keydown', function (e) {
