@@ -2692,7 +2692,7 @@ window.printSelectedIDCards = function() {
     </div>
 
     <!-- Content Wrapper -->
-    <div style="position: relative; z-index: 10; padding: 150px 20px 0; text-align: center;">
+    <div style="position: relative; z-index: 10; padding: 138px 20px 0; text-align: center;">
         <!-- Photo -->
         <div style="width: 95px; height: 95px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid #ea580c; padding: 3px; background: #fff; position: relative;">
             <img src="${photoSrc}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="Student Photo">
@@ -2739,7 +2739,10 @@ window.printSelectedIDCards = function() {
                     <svg style="width: 11px; height: 11px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </div>
                 <div style="font-size: 11px; font-weight: 600; color: #374151; width: 85px;">Address</div>
-                <div style="font-size: 11px; font-weight: 700; color: #111827; flex: 1; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">: &nbsp;${addr}</div>
+                <div style="font-size: 11px; font-weight: 700; color: #111827; flex: 1; line-height: 1.3; display: flex; align-items: flex-start; gap: 4px;">
+                    <span>:</span>
+                    <span style="flex: 1; padding-right: 5px;">${addr}</span>
+                </div>
             </div>
         </div>
     </div>
