@@ -2687,12 +2687,12 @@ window.printSelectedIDCards = function() {
     <div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 50px; height: 8px; background: #fff; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); z-index: 30;"></div>
 
     <!-- Logo (Absolutely Positioned to overlap white bg mostly) -->
-    <div style="position: absolute; top: 35px; left: 0; width: 100%; text-align: center; z-index: 20;">
+    <div style="position: absolute; top: 50px; left: 0; width: 100%; text-align: center; z-index: 20;">
         <img src="logo black academe.png" style="height: 90px; object-fit: contain; margin: 0 auto; display: block;" alt="Logo">
     </div>
 
     <!-- Content Wrapper -->
-    <div style="position: relative; z-index: 10; padding: 135px 20px 0; text-align: center;">
+    <div style="position: relative; z-index: 10; padding: 150px 20px 0; text-align: center;">
         <!-- Photo -->
         <div style="width: 95px; height: 95px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid #ea580c; padding: 3px; background: #fff; position: relative;">
             <img src="${photoSrc}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="Student Photo">
