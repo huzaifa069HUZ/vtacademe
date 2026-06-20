@@ -170,7 +170,9 @@
                 if (!isNaN(fallbackParsed.getTime())) return fallbackParsed;
             }
             return new Date(0);
-             let unsubscribe = null;
+        }
+
+        let unsubscribe = null;
 
         function loadScoreboard() {
             const testBar = document.getElementById('test-filter-bar');
