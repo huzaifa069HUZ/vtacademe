@@ -186,12 +186,15 @@
                     const data = doc.data();
                     allEntries.push({ id: doc.id, ...data });
                     const name = data.testName || 'Untitled';
+                    
+                    const getSeconds = (ts) => (ts && typeof ts.seconds === 'number') ? ts.seconds : 0;
+                    const entrySecs = getSeconds(data.createdAt);
+
                     if (!testMap[name]) {
-                        testMap[name] = { count: 0, date: data.date || '', createdAt: data.createdAt ? data.createdAt.seconds : 0 };
+                        testMap[name] = { count: 0, date: data.date || '', createdAt: entrySecs };
                     } else {
-                        const dataSec = data.createdAt ? data.createdAt.seconds : 0;
-                        if (dataSec > testMap[name].createdAt) {
-                            testMap[name].createdAt = dataSec;
+                        if (entrySecs > testMap[name].createdAt) {
+                            testMap[name].createdAt = entrySecs;
                         }
                     }
                     testMap[name].count++;
@@ -203,7 +206,9 @@
                     const dateA = safeParseDate(testMap[a].date).getTime();
                     const dateB = safeParseDate(testMap[b].date).getTime();
                     if (dateB !== dateA) return dateB - dateA;
-                    return testMap[b].createdAt - testMap[a].createdAt;
+                    const cA = testMap[a].createdAt || 0;
+                    const cB = testMap[b].createdAt || 0;
+                    return cB - cA;
                 });
 
                 if (testNames.length === 0) {
@@ -315,8 +320,13 @@
 
             // Sort by percentage descending
             entries.sort((a, b) => {
-                if (b.percentage !== a.percentage) return b.percentage - a.percentage;
-                return (b.obtained || 0) - (a.obtained || 0);
+                const percA = typeof a.percentage === 'number' ? a.percentage : (parseFloat(a.percentage) || 0);
+                const percB = typeof b.percentage === 'number' ? b.percentage : (parseFloat(b.percentage) || 0);
+                if (percB !== percA) return percB - percA;
+                
+                const obtA = typeof a.obtained === 'number' ? a.obtained : (parseFloat(a.obtained) || 0);
+                const obtB = typeof b.obtained === 'number' ? b.obtained : (parseFloat(b.obtained) || 0);
+                return obtB - obtA;
             });
 
             let classHtml = '<div id="class-filter-bar" class="flex flex-wrap justify-center gap-2 mb-6">';
