@@ -173,6 +173,7 @@
         }
 
         async function loadScoreboard() {
+            allEntries = []; // Clear array to prevent duplicates on re-execution
             const testBar = document.getElementById('test-filter-bar');
             const loader = document.getElementById('scoreboard-loader');
             const container = document.getElementById('scoreboard-container');
@@ -225,7 +226,8 @@
                 let pillsHtml = '';
                 testNames.forEach((name) => {
                     const info = testMap[name];
-                    pillsHtml += `<button onclick="window.selectTest('${name.replace(/'/g, "\\'")}')" 
+                    const escapedName = name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    pillsHtml += `<button onclick="window.selectTest('${escapedName}')" 
                         data-test="${name}"
                         class="test-pill px-6 py-2.5 rounded-full border border-[#161311]/10 bg-white text-sm font-bold text-[#546877] transition-all duration-500 hover:border-[#ff771c] hover:text-[#ff771c] active:scale-95 shadow-sm whitespace-nowrap">
                         ${name} <span class="text-[10px] ml-1 opacity-50">(${info.count})</span>
@@ -448,7 +450,7 @@
             else if (rank === 3) medalHtml = `<div class="w-10 h-10 rounded-xl bg-orange-100 border border-orange-300 flex items-center justify-center text-xl shrink-0 shadow-sm">🥉</div>`;
             else medalHtml = `<div class="w-10 h-10 rounded-xl bg-white border border-[#161311]/10 flex items-center justify-center text-sm font-black text-[#546877] shrink-0">${rank}</div>`;
 
-            const initials = (entry.studentName || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+            const initials = String(entry.studentName || 'U').split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
             const avatarHtml = entry.studentPhoto 
                 ? `<img src="${entry.studentPhoto}" class="w-full h-full object-cover rounded-xl" alt="">`
                 : `<span class="text-[11px] font-black text-[#546877]">${initials}</span>`;
