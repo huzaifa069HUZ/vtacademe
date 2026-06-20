@@ -149,6 +149,29 @@
         let activeSubject = 'all';
         let allEntries = [];
 
+        // Helper to safely parse dates across browsers (fixes Safari/iOS invalid date issues)
+        function safeParseDate(dateVal) {
+            if (!dateVal) return new Date(0);
+            if (typeof dateVal === 'object' && dateVal.seconds !== undefined) return new Date(dateVal.seconds * 1000);
+            if (dateVal instanceof Date) return dateVal;
+            if (typeof dateVal === 'number') return new Date(dateVal);
+            if (typeof dateVal === 'string') {
+                const str = dateVal.trim();
+                if (!str) return new Date(0);
+                // Handle DD-MM-YYYY or DD/MM/YYYY format explicitly
+                const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+                if (dmyMatch) return new Date(parseInt(dmyMatch[3], 10), parseInt(dmyMatch[2], 10) - 1, parseInt(dmyMatch[1], 10));
+                
+                // Fallback to standard parsing, replacing dashes with slashes helps older Safari versions
+                const parsed = new Date(str);
+                if (!isNaN(parsed.getTime())) return parsed;
+                
+                const fallbackParsed = new Date(str.replace(/-/g, '/'));
+                if (!isNaN(fallbackParsed.getTime())) return fallbackParsed;
+            }
+            return new Date(0);
+        }
+
         async function loadScoreboard() {
             const testBar = document.getElementById('test-filter-bar');
             const loader = document.getElementById('scoreboard-loader');
@@ -177,8 +200,8 @@
                 loader.classList.add('hidden');
 
                 const testNames = Object.keys(testMap).sort((a, b) => {
-                    const dateA = new Date(testMap[a].date || 0).getTime();
-                    const dateB = new Date(testMap[b].date || 0).getTime();
+                    const dateA = safeParseDate(testMap[a].date).getTime();
+                    const dateB = safeParseDate(testMap[b].date).getTime();
                     if (dateB !== dateA) return dateB - dateA;
                     return testMap[b].createdAt - testMap[a].createdAt;
                 });
@@ -448,7 +471,11 @@
             `;
         }
 
-        document.addEventListener('DOMContentLoaded', loadScoreboard);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadScoreboard);
+        } else {
+            loadScoreboard();
+        }
     </script>
 </head>
 <body class="antialiased min-h-screen flex flex-col pt-24 relative selection:bg-[#ff771c] selection:text-white">

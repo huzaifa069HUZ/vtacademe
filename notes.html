@@ -546,8 +546,11 @@
                 console.error(err);
             }
         };
-
-        document.addEventListener('DOMContentLoaded', fetchNotes);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchNotes);
+        } else {
+            fetchNotes();
+        }
     </script>
 </head>
 <body class="antialiased min-h-screen flex flex-col pt-24 relative selection:bg-[#ff771c] selection:text-white">
