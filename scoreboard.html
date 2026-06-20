@@ -129,7 +129,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, getDocsFromServer, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -253,30 +253,29 @@
             }
 
             try {
-                // Always fetch from server to avoid stale/empty cache
-                let snap;
-                try {
-                    snap = await getDocsFromServer(collection(db, 'scoreboard'));
-                } catch (serverErr) {
-                    // If server fetch fails (e.g. offline), fall back to cache
-                    console.warn('Server fetch failed, using cache:', serverErr);
-                    snap = await getDocs(collection(db, 'scoreboard'));
-                }
+                console.log('[Scoreboard] Fetching data...');
+                const snap = await getDocs(collection(db, 'scoreboard'));
+                console.log('[Scoreboard] Got', snap.size, 'documents');
                 let testMap = processSnapshot(snap);
 
-                // If still empty, retry once after a short delay
+                // If empty on first try, wait and retry once
                 if (Object.keys(testMap).length === 0) {
+                    console.log('[Scoreboard] Empty result, retrying in 2s...');
                     await new Promise(r => setTimeout(r, 2000));
-                    snap = await getDocsFromServer(collection(db, 'scoreboard'));
-                    testMap = processSnapshot(snap);
+                    const snap2 = await getDocs(collection(db, 'scoreboard'));
+                    console.log('[Scoreboard] Retry got', snap2.size, 'documents');
+                    testMap = processSnapshot(snap2);
                 }
 
                 renderTestPills(testMap);
 
             } catch (error) {
-                console.error("Error fetching scoreboard:", error);
+                console.error("[Scoreboard] Error:", error);
                 loader.classList.add('hidden');
-                container.innerHTML = `<div class="w-full text-center py-20 text-red-500 font-medium">Failed to load scoreboard. Please try again later.</div>`;
+                container.innerHTML = `<div class="w-full text-center py-20">
+                    <div class="text-red-500 font-medium mb-2">Failed to load scoreboard.</div>
+                    <button onclick="location.reload()" class="px-6 py-2 bg-[#ff771c] text-white rounded-full text-sm font-bold hover:bg-[#e5691a] transition-colors">Try Again</button>
+                </div>`;
             }
         }
 
