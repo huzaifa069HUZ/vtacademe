@@ -129,7 +129,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBnXG_U4eWP_lS-5SyoPfk9h0WdVNAZbYc",
@@ -170,80 +170,90 @@
                 if (!isNaN(fallbackParsed.getTime())) return fallbackParsed;
             }
             return new Date(0);
-        }
+             let unsubscribe = null;
 
-        async function loadScoreboard() {
-            allEntries = []; // Clear array to prevent duplicates on re-execution
+        function loadScoreboard() {
             const testBar = document.getElementById('test-filter-bar');
             const loader = document.getElementById('scoreboard-loader');
             const container = document.getElementById('scoreboard-container');
             const emptyState = document.getElementById('scoreboard-empty');
 
             try {
-                const snap = await getDocs(collection(db, 'scoreboard'));
-                const testMap = {};
+                unsubscribe = onSnapshot(collection(db, 'scoreboard'), (snap) => {
+                    allEntries = []; // Clear array
+                    const testMap = {};
 
-                snap.forEach((doc) => {
-                    const data = doc.data();
-                    allEntries.push({ id: doc.id, ...data });
-                    const name = data.testName || 'Untitled';
-                    
-                    const getSeconds = (ts) => (ts && typeof ts.seconds === 'number') ? ts.seconds : 0;
-                    const entrySecs = getSeconds(data.createdAt);
+                    snap.forEach((doc) => {
+                        const data = doc.data();
+                        allEntries.push({ id: doc.id, ...data });
+                        const name = data.testName || 'Untitled';
+                        
+                        const getSeconds = (ts) => (ts && typeof ts.seconds === 'number') ? ts.seconds : 0;
+                        const entrySecs = getSeconds(data.createdAt);
 
-                    if (!testMap[name]) {
-                        testMap[name] = { count: 0, date: data.date || '', createdAt: entrySecs };
-                    } else {
-                        if (entrySecs > testMap[name].createdAt) {
-                            testMap[name].createdAt = entrySecs;
+                        if (!testMap[name]) {
+                            testMap[name] = { count: 0, date: data.date || '', createdAt: entrySecs };
+                        } else {
+                            if (entrySecs > testMap[name].createdAt) {
+                                testMap[name].createdAt = entrySecs;
+                            }
                         }
+                        testMap[name].count++;
+                    });
+
+                    loader.classList.add('hidden');
+
+                    const testNames = Object.keys(testMap).sort((a, b) => {
+                        const dateA = safeParseDate(testMap[a].date).getTime();
+                        const dateB = safeParseDate(testMap[b].date).getTime();
+                        if (dateB !== dateA) return dateB - dateA;
+                        const cA = testMap[a].createdAt || 0;
+                        const cB = testMap[b].createdAt || 0;
+                        return cB - cA;
+                    });
+
+                    if (testNames.length === 0) {
+                        testBar.classList.add('hidden');
+                        container.innerHTML = '';
+                        emptyState.classList.remove('hidden');
+                        return;
                     }
-                    testMap[name].count++;
+
+                    emptyState.classList.add('hidden');
+
+                    // Check URL params for pre-selected test
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const preselected = urlParams.get('test');
+
+                    // Render test filter pills
+                    testBar.classList.remove('hidden');
+                    let pillsHtml = '';
+                    testNames.forEach((name) => {
+                        const info = testMap[name];
+                        const escapedName = name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                        pillsHtml += `<button onclick="window.selectTest('${escapedName}')" 
+                            data-test="${name}"
+                            class="test-pill px-6 py-2.5 rounded-full border border-[#161311]/10 bg-white text-sm font-bold text-[#546877] transition-all duration-500 hover:border-[#ff771c] hover:text-[#ff771c] active:scale-95 shadow-sm whitespace-nowrap">
+                            ${name} <span class="text-[10px] ml-1 opacity-50">(${info.count})</span>
+                        </button>`;
+                    });
+                    testBar.innerHTML = pillsHtml;
+
+                    // If activeTest is already set (e.g. during a real-time update), keep it
+                    if (activeTest && testNames.includes(activeTest)) {
+                        window.selectTest(activeTest);
+                    } else if (preselected && testNames.includes(preselected)) {
+                        window.selectTest(preselected);
+                    } else {
+                        window.selectTest(testNames[0]);
+                    }
+                }, (error) => {
+                    console.error("Error fetching scoreboard:", error);
+                    loader.classList.add('hidden');
+                    container.innerHTML = `<div class="w-full text-center py-20 text-red-500 font-medium">Failed to load scoreboard. Please try again later.</div>`;
                 });
-
-                loader.classList.add('hidden');
-
-                const testNames = Object.keys(testMap).sort((a, b) => {
-                    const dateA = safeParseDate(testMap[a].date).getTime();
-                    const dateB = safeParseDate(testMap[b].date).getTime();
-                    if (dateB !== dateA) return dateB - dateA;
-                    const cA = testMap[a].createdAt || 0;
-                    const cB = testMap[b].createdAt || 0;
-                    return cB - cA;
-                });
-
-                if (testNames.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    return;
-                }
-
-                // Check URL params for pre-selected test
-                const urlParams = new URLSearchParams(window.location.search);
-                const preselected = urlParams.get('test');
-
-                // Render test filter pills
-                testBar.classList.remove('hidden');
-                let pillsHtml = '';
-                testNames.forEach((name) => {
-                    const info = testMap[name];
-                    const escapedName = name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                    pillsHtml += `<button onclick="window.selectTest('${escapedName}')" 
-                        data-test="${name}"
-                        class="test-pill px-6 py-2.5 rounded-full border border-[#161311]/10 bg-white text-sm font-bold text-[#546877] transition-all duration-500 hover:border-[#ff771c] hover:text-[#ff771c] active:scale-95 shadow-sm whitespace-nowrap">
-                        ${name} <span class="text-[10px] ml-1 opacity-50">(${info.count})</span>
-                    </button>`;
-                });
-                testBar.innerHTML = pillsHtml;
-
-                // Auto-select from URL or first test
-                if (preselected && testNames.includes(preselected)) {
-                    window.selectTest(preselected);
-                } else {
-                    window.selectTest(testNames[0]);
-                }
-
             } catch (error) {
-                console.error("Error fetching scoreboard:", error);
+                console.error("Initialization error:", error);
                 loader.classList.add('hidden');
                 container.innerHTML = `<div class="w-full text-center py-20 text-red-500 font-medium">Failed to load scoreboard. Please try again later.</div>`;
             }
