@@ -511,6 +511,9 @@ document.getElementById('addStudentForm').addEventListener('submit', async (e) =
             std: document.getElementById("admin_class").value,
             branch: document.getElementById("admin_branch").value,
             address: document.getElementById("admin_address").value,
+            previousSchool: document.getElementById("admin_previousSchool") ? document.getElementById("admin_previousSchool").value : "",
+            schoolSubject: document.getElementById("admin_schoolSubject") ? document.getElementById("admin_schoolSubject").value : "",
+            percentage: document.getElementById("admin_percentage") ? document.getElementById("admin_percentage").value : "",
             photoBase64: document.getElementById('admin_photoBase64').value || ""
         };
 
@@ -558,6 +561,9 @@ window.editStudent = (id) => {
     document.getElementById("admin_course").value = s.course || "Class 11";
     document.getElementById("admin_branch").value = s.branch || "Phulwari Block";
     document.getElementById("admin_address").value = s.address || "";
+    if (document.getElementById("admin_previousSchool")) document.getElementById("admin_previousSchool").value = s.previousSchool || "";
+    if (document.getElementById("admin_schoolSubject")) document.getElementById("admin_schoolSubject").value = s.schoolSubject || "";
+    if (document.getElementById("admin_percentage")) document.getElementById("admin_percentage").value = s.percentage || "";
     
     const stdInput = document.getElementById("admin_class");
     stdInput.value = s.std || "";
